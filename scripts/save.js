@@ -8,7 +8,7 @@ function saveGame() {
 
     // Get current game state
     const gameState = getGameState();
-
+    
     const saveData = {
         hoursWorked: gameState.hoursWorked,
         isWorking: gameState.isWorking,
