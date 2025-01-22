@@ -1,0 +1,33 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+#game-container {
+    text-align: center;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#mode-selection p, #game-screen p {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
