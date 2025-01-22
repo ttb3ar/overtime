@@ -30,12 +30,12 @@ function updateGame() {
     // Check for weekend break (every 120 hours)
     if (gameState.weeklyHours >= 120) {
         gameState.isWorking = false;
-        gameState.status = 'Enjoying the weekend';
+        gameState.status = '"Enjoying" the weekend :(';
         if (gameState.weeklyHours >= 168) { // 120 + 48 hours
             gameState.weeklyHours = 0;
             gameState.isWorking = true;
             gameState.dailyHours = 0;
-            gameState.status = 'Working';
+            gameState.status = 'Working :D';
         } else {
             gameState.weeklyHours++;
         }
@@ -46,7 +46,7 @@ function updateGame() {
     // Check for daily work limit
     if (gameState.dailyHours >= 8) {
         gameState.isWorking = false;
-        gameState.status = 'Unproductive';
+        gameState.status = 'Unproductive :(';
         if (gameState.dailyHours >= 24) {
             gameState.dailyHours = 0;
             gameState.isWorking = true;
@@ -91,7 +91,7 @@ function resetGame() {
         hourlyRate: 15,
         dailyHours: 0,
         weeklyHours: 0,
-        status: 'Working'
+        status: 'Working :D'
     };
     
     updateDisplay();
