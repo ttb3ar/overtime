@@ -5,7 +5,9 @@ let gameState = {
     isWorking: true,
     salary: 0,
     hourlyRate: 15,
-    breakTimeRemaining: 0
+    dailyHours: 0,
+    weeklyHours: 0,
+    status: 'Working'
 };
 
 // Initialize game on page load
@@ -14,7 +16,6 @@ window.addEventListener('load', () => {
     startWork();
 });
 
-// Core game functions
 function startWork() {
     if (timeInterval) {
         clearInterval(timeInterval);
@@ -26,25 +27,56 @@ function startWork() {
 }
 
 function updateGame() {
-    if (gameState.isWorking) {
-        gameState.hoursWorked += 1; // Increment by 1 hour every second
-        gameState.salary += gameState.hourlyRate;
+    // Check for weekend break (every 120 hours)
+    if (gameState.weeklyHours >= 120) {
+        gameState.isWorking = false;
+        gameState.status = 'Enjoying the weekend';
+        if (gameState.weeklyHours >= 168) { // 120 + 48 hours
+            gameState.weeklyHours = 0;
+            gameState.isWorking = true;
+            gameState.dailyHours = 0;
+            gameState.status = 'Working';
+        } else {
+            gameState.weeklyHours++;
+        }
         updateDisplay();
-    } else if (gameState.breakTimeRemaining > 0) {
-        gameState.breakTimeRemaining--;
-        updateDisplay();
+        return;
     }
+
+    // Check for daily work limit
+    if (gameState.dailyHours >= 8) {
+        gameState.isWorking = false;
+        gameState.status = 'Unproductive';
+        if (gameState.dailyHours >= 24) {
+            gameState.dailyHours = 0;
+            gameState.isWorking = true;
+            gameState.status = 'Working';
+        }
+    }
+
+    // Update hours and salary if working
+    if (gameState.isWorking) {
+        gameState.hoursWorked += 1;
+        gameState.salary += gameState.hourlyRate;
+        gameState.dailyHours++;
+        gameState.weeklyHours++;
+    } else {
+        gameState.dailyHours++;
+        gameState.weeklyHours++;
+    }
+
+    updateDisplay();
 }
 
 function updateDisplay() {
     document.getElementById('hours').textContent = Math.floor(gameState.hoursWorked);
     document.getElementById('salary').textContent = '?';
-    document.getElementById('status').textContent = gameState.isWorking ? 'Working' : 'On Break';
+    document.getElementById('status').textContent = gameState.status;
 }
 
 function updateStatus() {
     const statusElement = document.getElementById('status');
-    statusElement.textContent = gameState.isWorking ? 'Working' : 'On Break';
+    statusElement.textContent = gameState.status;
 }
 
 function resetGame() {
@@ -57,7 +89,9 @@ function resetGame() {
         isWorking: true,
         salary: 0,
         hourlyRate: 15,
-        breakTimeRemaining: 0
+        dailyHours: 0,
+        weeklyHours: 0,
+        status: 'Working'
     };
     
     updateDisplay();
@@ -75,17 +109,15 @@ function setGameState(newState) {
     startWork();
 }
 
-// Override the browser's reload handling
+// Handle page reload
 window.addEventListener('beforeunload', function(event) {
-    // This will ensure the game state is preserved during reload
     localStorage.setItem('gameState', JSON.stringify(gameState));
 });
 
-// Check for saved state on load
 window.addEventListener('load', function() {
     const savedState = localStorage.getItem('gameState');
     if (savedState) {
         setGameState(JSON.parse(savedState));
-        localStorage.removeItem('gameState'); // Clean up after loading
+        localStorage.removeItem('gameState');
     }
 });
