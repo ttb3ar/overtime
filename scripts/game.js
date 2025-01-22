@@ -14,7 +14,7 @@ function startWork() {
         clearInterval(timeInterval);
     }
     
-    timeInterval = setInterval(updateGame, 1000);
+    timeInterval = setInterval(updateGame, 100);
     gameState.isWorking = true;
     updateStatus();
 }
