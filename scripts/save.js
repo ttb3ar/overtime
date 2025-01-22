@@ -6,7 +6,6 @@ function saveGame() {
     const min = String(date.getMinutes()).padStart(2, '0');
     const year = String(date.getFullYear()).slice(2);
 
-    // Get current game state
     const gameState = getGameState();
     
     const saveData = {
@@ -24,11 +23,11 @@ function saveGame() {
         .join('\n');
 
     const filename = `salary_game_${year}${month}${day}_${hour}-${min}.sav`;
-    const blob = new Blob([saveText], { type: "text/plain;charset=utf-8" });
-    saveAs(blob, filename);
+    saveToFile(saveText, filename);
 }
 
-function saveAs(blob, filename) {
+function saveToFile(content, filename) {
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = filename;
