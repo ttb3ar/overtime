@@ -1,3 +1,4 @@
+// Load game functionality
 function loadGame() {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -24,20 +25,13 @@ function handleFileSelect(event) {
                                isNaN(value) ? value : Number(value);
             });
 
-            // Validate game mode explicitly
-            if (!saveData.gameMode || 
-                (saveData.gameMode !== 'salaryman' && saveData.gameMode !== 'salarywoman')) {
-                throw new Error('Invalid or missing game mode in save file');
-            }
-
-            // Stop current game loop
+            // Stop current game loop and restore state
             if (timeInterval) {
                 clearInterval(timeInterval);
             }
 
-            // Restore game state including mode
+            // Restore game state
             setGameState({
-                gameMode: saveData.gameMode,
                 hoursWorked: saveData.hoursWorked,
                 isWorking: saveData.isWorking,
                 salary: saveData.salary,
@@ -50,13 +44,6 @@ function handleFileSelect(event) {
                 setDarkModeState(saveData.isDarkMode);
             }
 
-            // Update UI for loaded game state
-            document.getElementById('mode-selection').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            document.getElementById('control-buttons').style.display = 'block';
-            document.getElementById('selected-mode').textContent = 
-                saveData.gameMode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
-
             // Restart game loop
             startWork();
 
@@ -65,4 +52,42 @@ function handleFileSelect(event) {
         }
     };
     reader.readAsText(file);
+}
+
+// Save game functionality
+function saveGame() {
+    const date = new Date();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hour = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(2);
+
+    const gameState = getGameState();
+    
+    const saveData = {
+        hoursWorked: gameState.hoursWorked,
+        isWorking: gameState.isWorking,
+        salary: gameState.salary,
+        hourlyRate: gameState.hourlyRate,
+        breakTimeRemaining: gameState.breakTimeRemaining,
+        isDarkMode: getDarkModeState(),
+        timestamp: Date.now()
+    };
+
+    const saveText = Object.entries(saveData)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+
+    const filename = `salary_game_${year}${month}${day}_${hour}-${min}.sav`;
+    const blob = new Blob([saveText], { type: "text/plain;charset=utf-8" });
+    saveAs(blob, filename);
+}
+
+function saveAs(blob, filename) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
 }
