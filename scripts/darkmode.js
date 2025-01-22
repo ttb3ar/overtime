@@ -1,5 +1,7 @@
+// Dark Mode State
 let isDarkMode = false;
 
+// Dark Mode Functions
 function toggleDarkMode() {
     isDarkMode = !isDarkMode;
     updateDarkMode();
@@ -17,31 +19,12 @@ function updateDarkMode() {
     }
 }
 
-let gameMode = null;
-let hoursWorked = 0;
-let timeInterval = null;
-let isWorking = true;
-
-function selectMode(mode) {
-    gameMode = mode;
-    document.getElementById('mode-selection').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    document.getElementById('control-buttons').style.display = 'block';
-    startWork();
+// Export dark mode state for save/load functionality
+function getDarkModeState() {
+    return isDarkMode;
 }
 
-function startWork() {
-    timeInterval = setInterval(() => {
-        if (isWorking) {
-            hoursWorked++;
-            document.getElementById('hours').textContent = hoursWorked;
-            
-            if (hoursWorked % 8 === 0) {
-                isWorking = false;
-                setTimeout(() => {
-                    isWorking = true;
-                }, 16000); // 16 seconds break
-            }
-        }
-    }, 1000); // 1 second interval
+function setDarkModeState(state) {
+    isDarkMode = state;
+    updateDarkMode();
 }
