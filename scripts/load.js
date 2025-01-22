@@ -1,4 +1,3 @@
-// load.js
 function loadGame() {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -20,35 +19,35 @@ function handleFileSelect(event) {
             // Parse save file
             saveText.split('\n').forEach(line => {
                 const [key, value] = line.split(': ');
-                saveData[key] = value;
+                saveData[key] = value === 'true' ? true : 
+                               value === 'false' ? false :
+                               isNaN(value) ? value : Number(value);
             });
 
             // Validate save data
-            if (!saveData.gameMode || !saveData.hoursWorked) {
+            if (!saveData.gameMode) {
                 throw new Error('Invalid save file');
             }
 
+            // Stop current game loop
+            if (timeInterval) {
+                clearInterval(timeInterval);
+            }
+
             // Restore game state
-            clearInterval(timeInterval);
-            gameMode = saveData.gameMode;
-            hoursWorked = parseInt(saveData.hoursWorked);
-            isWorking = saveData.isWorking === 'true';
+            setGameState(saveData);
             
             // Restore dark mode if it was saved
             if (saveData.isDarkMode !== undefined) {
-                isDarkMode = saveData.isDarkMode === 'true';
-                updateDarkMode();
+                setDarkModeState(saveData.isDarkMode);
             }
 
             // Update UI
             document.getElementById('mode-selection').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
-            document.getElementById('hours').textContent = hoursWorked;
-
-            // Show control buttons
             document.getElementById('control-buttons').style.display = 'block';
 
-            // Restart work timer
+            // Restart game loop
             startWork();
 
         } catch (error) {
@@ -56,18 +55,4 @@ function handleFileSelect(event) {
         }
     };
     reader.readAsText(file);
-}
-
-function restart() {
-    // Clear all game state
-    clearInterval(timeInterval);
-    gameMode = null;
-    hoursWorked = 0;
-    isWorking = true;
-
-    // Reset UI
-    document.getElementById('mode-selection').style.display = 'block';
-    document.getElementById('game-screen').style.display = 'none';
-    document.getElementById('control-buttons').style.display = 'none';
-    document.getElementById('hours').textContent = '0';
 }
