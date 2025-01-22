@@ -7,7 +7,7 @@ let gameState = {
     hourlyRate: 15,
     dailyHours: 0,
     weeklyHours: 0,
-    status: 'Working'
+    status: 'Working :D'
 };
 
 // Initialize game on page load
@@ -50,7 +50,7 @@ function updateGame() {
         if (gameState.dailyHours >= 24) {
             gameState.dailyHours = 0;
             gameState.isWorking = true;
-            gameState.status = 'Working';
+            gameState.status = 'Working :D';
         }
     }
 
