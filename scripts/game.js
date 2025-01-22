@@ -13,6 +13,10 @@ const WORK_DAY_HOURS = 8;
 const BREAK_DURATION = 16; // seconds
 const UPDATE_INTERVAL = 1000; // milliseconds
 const OVERTIME_THRESHOLD = 8; // hours
+const SALARY_RATES = {
+    'salaryman': 20,
+    'salarywoman': 22  // Example of different base pay
+};
 
 // Game Initialization
 function initializeGame() {
@@ -21,28 +25,46 @@ function initializeGame() {
     salary = 0;
     isWorking = true;
     breakTimeRemaining = 0;
+    hourlyRate = 20;
     updateDisplay();
+    showModeSelection();
 }
 
 // Mode Selection
 function selectMode(mode) {
+    if (mode !== 'salaryman' && mode !== 'salarywoman') {
+        console.error('Invalid mode selected');
+        return;
+    }
+    
     gameMode = mode;
+    hourlyRate = SALARY_RATES[mode];
     
-    // Adjust hourly rate based on mode
-    hourlyRate = (mode === 'salaryman') ? 20 : 22;
-    
-    // Update UI
+    // Update UI to show selected mode
     document.getElementById('mode-selection').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
     document.getElementById('control-buttons').style.display = 'block';
+    document.getElementById('selected-mode').textContent = 
+        mode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
     
     // Start game loop
     startWork();
     updateDisplay();
 }
 
+function showModeSelection() {
+    document.getElementById('mode-selection').style.display = 'block';
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('control-buttons').style.display = 'none';
+}
+
 // Main Game Loop
 function startWork() {
+    if (!gameMode) {
+        console.error('Cannot start work without selecting mode');
+        return;
+    }
+
     if (timeInterval) {
         clearInterval(timeInterval);
     }
@@ -96,6 +118,7 @@ function updateDisplay() {
     const hoursDisplay = document.getElementById('hours');
     const salaryDisplay = document.getElementById('salary');
     const statusDisplay = document.getElementById('status');
+    const modeDisplay = document.getElementById('selected-mode');
     
     if (hoursDisplay) {
         hoursDisplay.textContent = hoursWorked;
@@ -112,6 +135,10 @@ function updateDisplay() {
             statusDisplay.textContent = 'Working';
         }
     }
+
+    if (modeDisplay && gameMode) {
+        modeDisplay.textContent = gameMode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
+    }
 }
 
 // Game Reset
@@ -120,11 +147,6 @@ function resetGame() {
         clearInterval(timeInterval);
     }
     initializeGame();
-    
-    // Reset UI
-    document.getElementById('mode-selection').style.display = 'block';
-    document.getElementById('game-screen').style.display = 'none';
-    document.getElementById('control-buttons').style.display = 'none';
 }
 
 // Game State Getters for Save/Load
@@ -141,12 +163,22 @@ function getGameState() {
 
 // Game State Setters for Save/Load
 function setGameState(state) {
+    // Validate game mode before setting state
+    if (state.gameMode !== 'salaryman' && state.gameMode !== 'salarywoman') {
+        throw new Error('Invalid game mode in save file');
+    }
+
     gameMode = state.gameMode;
     hoursWorked = state.hoursWorked;
     isWorking = state.isWorking;
     salary = state.salary;
     hourlyRate = state.hourlyRate;
     breakTimeRemaining = state.breakTimeRemaining;
+
+    // Update UI elements
+    document.getElementById('mode-selection').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    document.getElementById('control-buttons').style.display = 'block';
     
     updateDisplay();
 }
