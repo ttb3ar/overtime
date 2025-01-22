@@ -27,8 +27,8 @@ function startWork() {
 
 function updateGame() {
     if (gameState.isWorking) {
-        gameState.hoursWorked += 1/3600; // Increment by 1 second worth of hours
-        gameState.salary += gameState.hourlyRate / 3600;
+        gameState.hoursWorked += 1; // Increment by 1 hour every second
+        gameState.salary += gameState.hourlyRate;
         updateDisplay();
     } else if (gameState.breakTimeRemaining > 0) {
         gameState.breakTimeRemaining--;
@@ -37,8 +37,8 @@ function updateGame() {
 }
 
 function updateDisplay() {
-    document.getElementById('hours').textContent = gameState.hoursWorked.toFixed(2);
-    document.getElementById('salary').textContent = '?'; // Always show ? for salary
+    document.getElementById('hours').textContent = Math.floor(gameState.hoursWorked);
+    document.getElementById('salary').textContent = '?';
     document.getElementById('status').textContent = gameState.isWorking ? 'Working' : 'On Break';
 }
 
@@ -72,5 +72,20 @@ function getGameState() {
 function setGameState(newState) {
     gameState = { ...newState };
     updateDisplay();
-    startWork(); // Ensure game starts after loading state
+    startWork();
 }
+
+// Override the browser's reload handling
+window.addEventListener('beforeunload', function(event) {
+    // This will ensure the game state is preserved during reload
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+});
+
+// Check for saved state on load
+window.addEventListener('load', function() {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+        setGameState(JSON.parse(savedState));
+        localStorage.removeItem('gameState'); // Clean up after loading
+    }
+});
