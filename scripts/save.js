@@ -6,11 +6,10 @@ function saveGame() {
     const min = String(date.getMinutes()).padStart(2, '0');
     const year = String(date.getFullYear()).slice(2);
 
-    // Get current game state including mode
+    // Get current game state
     const gameState = getGameState();
-    
+
     const saveData = {
-        gameMode: gameState.gameMode, // Explicitly save the mode
         hoursWorked: gameState.hoursWorked,
         isWorking: gameState.isWorking,
         salary: gameState.salary,
