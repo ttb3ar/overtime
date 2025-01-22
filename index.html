@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Game</title>
+    <link rel="stylesheet" href="design.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="mode-selection">
+            <p>choose mode:</p>
+            <button onclick="selectMode('salaryman')">salaryman</button>
+            <button onclick="selectMode('salarywoman')">salarywoman</button>
+        </div>
+        <div id="game-screen" style="display: none;">
+            <p>Hours worked: <span id="hours">0</span></p>
+        </div>
+    </div>
+    
+    <script src="scripts/darkmode.js"></script>
+    <script src="scripts/save.js"></script>
+    <script src="scripts/load.js"></script>
+</body>
+</html>
