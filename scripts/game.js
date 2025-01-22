@@ -8,13 +8,19 @@ let gameState = {
     breakTimeRemaining: 0
 };
 
+// Initialize game on page load
+window.addEventListener('load', () => {
+    resetGame();
+    startWork();
+});
+
 // Core game functions
 function startWork() {
     if (timeInterval) {
         clearInterval(timeInterval);
     }
     
-    timeInterval = setInterval(updateGame, 100);
+    timeInterval = setInterval(updateGame, 1000);
     gameState.isWorking = true;
     updateStatus();
 }
@@ -32,7 +38,7 @@ function updateGame() {
 
 function updateDisplay() {
     document.getElementById('hours').textContent = gameState.hoursWorked.toFixed(2);
-    document.getElementById('salary').textContent = gameState.salary.toFixed(2);
+    document.getElementById('salary').textContent = '?'; // Always show ? for salary
     document.getElementById('status').textContent = gameState.isWorking ? 'Working' : 'On Break';
 }
 
@@ -66,4 +72,5 @@ function getGameState() {
 function setGameState(newState) {
     gameState = { ...newState };
     updateDisplay();
+    startWork(); // Ensure game starts after loading state
 }
