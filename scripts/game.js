@@ -1,187 +1,69 @@
-// Game State
-let gameMode = null;
-let hoursWorked = 0;
-let timeInterval = null;
-let isWorking = true;
-let salary = 0;
-let hourlyRate = 20; // Base hourly rate
-let overtimeMultiplier = 1.5;
-let breakTimeRemaining = 0;
-
-// Game Constants
-const WORK_DAY_HOURS = 8;
-const BREAK_DURATION = 16; // seconds
-const UPDATE_INTERVAL = 1000; // milliseconds
-const OVERTIME_THRESHOLD = 8; // hours
-const SALARY_RATES = {
-    'salaryman': 20,
-    'salarywoman': 22  // Example of different base pay
+// Game state and intervals
+let timeInterval;
+let gameState = {
+    hoursWorked: 0,
+    isWorking: true,
+    salary: 0,
+    hourlyRate: 15,
+    breakTimeRemaining: 0
 };
 
-// Game Initialization
-function initializeGame() {
-    gameMode = null;
-    hoursWorked = 0;
-    salary = 0;
-    isWorking = true;
-    breakTimeRemaining = 0;
-    hourlyRate = 20;
-    updateDisplay();
-    showModeSelection();
-}
-
-// Mode Selection
-function selectMode(mode) {
-    if (mode !== 'salaryman' && mode !== 'salarywoman') {
-        console.error('Invalid mode selected');
-        return;
-    }
-    
-    gameMode = mode;
-    hourlyRate = SALARY_RATES[mode];
-    
-    // Update UI to show selected mode
-    document.getElementById('mode-selection').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    document.getElementById('control-buttons').style.display = 'block';
-    document.getElementById('selected-mode').textContent = 
-        mode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
-    
-    // Start game loop
-    startWork();
-    updateDisplay();
-}
-
-function showModeSelection() {
-    document.getElementById('mode-selection').style.display = 'block';
-    document.getElementById('game-screen').style.display = 'none';
-    document.getElementById('control-buttons').style.display = 'none';
-}
-
-// Main Game Loop
+// Core game functions
 function startWork() {
-    if (!gameMode) {
-        console.error('Cannot start work without selecting mode');
-        return;
-    }
-
     if (timeInterval) {
         clearInterval(timeInterval);
     }
-
-    timeInterval = setInterval(() => {
-        updateGameState();
-    }, UPDATE_INTERVAL);
+    
+    timeInterval = setInterval(updateGame, 1000);
+    gameState.isWorking = true;
+    updateStatus();
 }
 
-// Game State Update
-function updateGameState() {
-    if (isWorking) {
-        hoursWorked++;
-        updateSalary();
-        
-        if (hoursWorked % WORK_DAY_HOURS === 0) {
-            startBreak();
-        }
-    } else {
-        breakTimeRemaining--;
-        if (breakTimeRemaining <= 0) {
-            endBreak();
-        }
+function updateGame() {
+    if (gameState.isWorking) {
+        gameState.hoursWorked += 1/3600; // Increment by 1 second worth of hours
+        gameState.salary += gameState.hourlyRate / 3600;
+        updateDisplay();
+    } else if (gameState.breakTimeRemaining > 0) {
+        gameState.breakTimeRemaining--;
+        updateDisplay();
     }
-    
-    updateDisplay();
 }
 
-// Break Management
-function startBreak() {
-    isWorking = false;
-    breakTimeRemaining = BREAK_DURATION;
-}
-
-function endBreak() {
-    isWorking = true;
-    breakTimeRemaining = 0;
-}
-
-// Salary Calculation
-function updateSalary() {
-    const regularHours = Math.min(hoursWorked, OVERTIME_THRESHOLD);
-    const overtimeHours = Math.max(0, hoursWorked - OVERTIME_THRESHOLD);
-    
-    salary = (regularHours * hourlyRate) + 
-             (overtimeHours * hourlyRate * overtimeMultiplier);
-}
-
-// Display Updates
 function updateDisplay() {
-    const hoursDisplay = document.getElementById('hours');
-    const salaryDisplay = document.getElementById('salary');
-    const statusDisplay = document.getElementById('status');
-    const modeDisplay = document.getElementById('selected-mode');
-    
-    if (hoursDisplay) {
-        hoursDisplay.textContent = hoursWorked;
-    }
-    
-    if (salaryDisplay) {
-        salaryDisplay.textContent = `$${salary.toFixed(2)}`;
-    }
-    
-    if (statusDisplay) {
-        if (!isWorking) {
-            statusDisplay.textContent = `On break: ${breakTimeRemaining}s remaining`;
-        } else {
-            statusDisplay.textContent = 'Working';
-        }
-    }
-
-    if (modeDisplay && gameMode) {
-        modeDisplay.textContent = gameMode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
-    }
+    document.getElementById('hours').textContent = gameState.hoursWorked.toFixed(2);
+    document.getElementById('salary').textContent = gameState.salary.toFixed(2);
+    document.getElementById('status').textContent = gameState.isWorking ? 'Working' : 'On Break';
 }
 
-// Game Reset
+function updateStatus() {
+    const statusElement = document.getElementById('status');
+    statusElement.textContent = gameState.isWorking ? 'Working' : 'On Break';
+}
+
 function resetGame() {
     if (timeInterval) {
         clearInterval(timeInterval);
     }
-    initializeGame();
-}
-
-// Game State Getters for Save/Load
-function getGameState() {
-    return {
-        gameMode,
-        hoursWorked,
-        isWorking,
-        salary,
-        hourlyRate,
-        breakTimeRemaining
+    
+    gameState = {
+        hoursWorked: 0,
+        isWorking: true,
+        salary: 0,
+        hourlyRate: 15,
+        breakTimeRemaining: 0
     };
-}
-
-// Game State Setters for Save/Load
-function setGameState(state) {
-    // Validate game mode before setting state
-    if (state.gameMode !== 'salaryman' && state.gameMode !== 'salarywoman') {
-        throw new Error('Invalid game mode in save file');
-    }
-
-    gameMode = state.gameMode;
-    hoursWorked = state.hoursWorked;
-    isWorking = state.isWorking;
-    salary = state.salary;
-    hourlyRate = state.hourlyRate;
-    breakTimeRemaining = state.breakTimeRemaining;
-
-    // Update UI elements
-    document.getElementById('mode-selection').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    document.getElementById('control-buttons').style.display = 'block';
     
     updateDisplay();
+    startWork();
 }
 
-// Initialize game when page loads
-window.addEventListener('load', initializeGame);
+// State management functions used by save/load
+function getGameState() {
+    return { ...gameState };
+}
+
+function setGameState(newState) {
+    gameState = { ...newState };
+    updateDisplay();
+}
