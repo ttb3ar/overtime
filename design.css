@@ -1,11 +1,21 @@
 body {
     margin: 0;
     padding: 0;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#control-buttons {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 #game-container {
@@ -13,7 +23,7 @@ body {
 }
 
 button {
-    margin: 10px;
+    margin: 0;
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
@@ -21,6 +31,7 @@ button {
     border-radius: 5px;
     background-color: #4CAF50;
     color: white;
+    transition: background-color 0.3s;
 }
 
 button:hover {
@@ -30,4 +41,17 @@ button:hover {
 #mode-selection p, #game-screen p {
     font-size: 24px;
     margin-bottom: 20px;
+}
+
+#mode-selection button {
+    margin: 10px;
+}
+
+#control-buttons button {
+    background-color: #2196F3;
+    width: 120px;
+}
+
+#control-buttons button:hover {
+    background-color: #1976D2;
 }
