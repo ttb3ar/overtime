@@ -15,7 +15,7 @@ function handleFileSelect(event) {
         try {
             const saveText = e.target.result;
             const saveData = {};
-            
+
             // Parse save file
             saveText.split('\n').forEach(line => {
                 const [key, value] = line.split(': ');
@@ -24,38 +24,28 @@ function handleFileSelect(event) {
                                isNaN(value) ? value : Number(value);
             });
 
-            // Validate game mode explicitly
-            if (!saveData.gameMode || 
-                (saveData.gameMode !== 'salaryman' && saveData.gameMode !== 'salarywoman')) {
-                throw new Error('Invalid or missing game mode in save file');
-            }
-
             // Stop current game loop
             if (timeInterval) {
                 clearInterval(timeInterval);
             }
 
-            // Restore game state including mode
+            // Restore game state
             setGameState({
-                gameMode: saveData.gameMode,
                 hoursWorked: saveData.hoursWorked,
                 isWorking: saveData.isWorking,
                 salary: saveData.salary,
                 hourlyRate: saveData.hourlyRate,
                 breakTimeRemaining: saveData.breakTimeRemaining
             });
-            
+
             // Restore dark mode if it was saved
             if (saveData.isDarkMode !== undefined) {
                 setDarkModeState(saveData.isDarkMode);
             }
 
             // Update UI for loaded game state
-            document.getElementById('mode-selection').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
             document.getElementById('control-buttons').style.display = 'block';
-            document.getElementById('selected-mode').textContent = 
-                saveData.gameMode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
 
             // Restart game loop
             startWork();
