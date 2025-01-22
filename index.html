@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salary Game</title>
     <link rel="stylesheet" href="design.css">
+    <style>
+        #control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        #control-buttons button {
+            padding: 8px 16px;
+        }
+
+        #game-container {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <div id="control-buttons">
@@ -17,7 +33,7 @@
     <div id="game-container">
         <div id="game-screen">
             <p>Hours worked: <span id="hours">0</span></p>
-            <p>Salary earned: <span id="salary">0.00</span></p>
+            <p>Salary earned: <span id="salary">?</span></p>
             <p>Status: <span id="status">Working</span></p>
         </div>
     </div>
