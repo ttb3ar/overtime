@@ -141,4 +141,15 @@ function resetGame() {
     startWork();
 }
 
-// Rest of the existing code remains the same...
+// Handle page reload
+window.addEventListener('beforeunload', function(event) {
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+});
+
+window.addEventListener('load', function() {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+        setGameState(JSON.parse(savedState));
+        localStorage.removeItem('gameState');
+    }
+});
