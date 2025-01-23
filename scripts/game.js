@@ -125,7 +125,7 @@ function updateStatus() {
 
 function updateDisplay() {
     document.getElementById('hours').textContent = Math.floor(gameState.hoursWorked);
-    document.getElementById('salary').textContent = '?';
+    document.getElementById('salary').textContent = 'Doesn`t matter.';
     document.getElementById('status').textContent = gameState.status;
 }
 
