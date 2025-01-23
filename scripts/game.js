@@ -17,6 +17,7 @@ let gameState = {
 
 // Initialize game on page load
 window.addEventListener('load', () => {
+    console.log("playing version 1.02");
     resetGame();
     startWork();
     setupOvertimeButton();
