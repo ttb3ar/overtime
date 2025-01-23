@@ -21,6 +21,16 @@ window.addEventListener('load', () => {
     setupOvertimeButton();
 });
 
+function startWork() {
+    if (timeInterval) {
+        clearInterval(timeInterval);
+    }
+    
+    timeInterval = setInterval(updateGame, 1000);
+    gameState.isWorking = true;
+    updateStatus();
+}
+
 function setupOvertimeButton() {
     overtimeButton = document.createElement('button');
     overtimeButton.id = 'overtime-button';
@@ -108,6 +118,11 @@ function updateGame() {
     updateDisplay();
 }
 
+function updateStatus() {
+    const statusElement = document.getElementById('status');
+    statusElement.textContent = gameState.status;
+}
+
 function updateDisplay() {
     document.getElementById('hours').textContent = Math.floor(gameState.hoursWorked);
     document.getElementById('salary').textContent = '?';
@@ -137,6 +152,17 @@ function resetGame() {
         overtimeButton.style.display = 'none';
     }
     
+    updateDisplay();
+    startWork();
+}
+
+// State management functions used by save/load
+function getGameState() {
+    return { ...gameState };
+}
+
+function setGameState(newState) {
+    gameState = { ...newState };
     updateDisplay();
     startWork();
 }
