@@ -11,7 +11,8 @@ let gameState = {
     status: 'Working :D',
     weeksPassed: 0,
     overtimeEligible: false,
-    overtimeHours: 0
+    overtimeHours: 0,
+    todayOvertimeUsed: false
 };
 
 // Initialize game on page load
@@ -28,20 +29,21 @@ function startWork() {
     
     timeInterval = setInterval(updateGame, 1000);
     gameState.isWorking = true;
+    gameState.todayOvertimeUsed = false; // Reset daily overtime
     updateStatus();
 }
 
 function setupOvertimeButton() {
     overtimeButton = document.createElement('button');
     overtimeButton.id = 'overtime-button';
-    overtimeButton.textContent = 'OVERTIME';
+    overtimeButton.textContent = 'OVERTIME Today?';
     overtimeButton.style.display = 'none';
     overtimeButton.onclick = startOvertime;
     document.getElementById('game-container').appendChild(overtimeButton);
 }
 
 function startOvertime() {
-    if (!gameState.overtimeEligible || gameState.overtimeHours >= 4) return;
+    if (!gameState.overtimeEligible || gameState.todayOvertimeUsed) return;
     
     // Activate exciting screen effect
     document.body.classList.add('overtime-active');
@@ -50,6 +52,7 @@ function startOvertime() {
     gameState.isWorking = true;
     gameState.status = 'OVERTIME ACTIVATED! ⚡';
     gameState.overtimeHours++;
+    gameState.todayOvertimeUsed = true;
     
     // Additional salary bonus during overtime
     gameState.salary += gameState.hourlyRate * 1.5;
@@ -70,7 +73,7 @@ function startOvertime() {
 
 function updateGame() {
     // Check for weekend break (every 120 hours)
-    if (gameState.weeklyHours >= 120) {
+    if (gameState.weeklyHours >= 120 && !gameState.todayOvertimeUsed) {
         gameState.isWorking = false;
         gameState.status = '"Enjoying" the weekend :(';
         if (gameState.weeklyHours >= 168) { // 120 + 48 hours
@@ -94,7 +97,7 @@ function updateGame() {
     }
 
     // Check for daily work limit
-    if (gameState.dailyHours >= 8) {
+    if (gameState.dailyHours >= 8 && !gameState.todayOvertimeUsed) {
         gameState.isWorking = false;
         gameState.status = 'Unproductive :(';
         if (gameState.dailyHours >= 24) {
@@ -144,7 +147,8 @@ function resetGame() {
         status: 'Working :D',
         weeksPassed: 0,
         overtimeEligible: false,
-        overtimeHours: 0
+        overtimeHours: 0,
+        todayOvertimeUsed: false
     };
     
     // Hide overtime button on reset
