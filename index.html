@@ -11,6 +11,19 @@
             align-items: center;
             padding: 20px;
             font-family: Arial, sans-serif;
+            transition: background-color 0.5s ease;
+        }
+
+        body.overtime-active {
+            background-color: #ff4500;
+            color: white;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
 
         #control-buttons {
@@ -32,6 +45,20 @@
 
         button:hover {
             background-color: #e0e0e0;
+        }
+
+        #overtime-button {
+            display: none;
+            background-color: #ff4500;
+            color: white;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         #game-container {
