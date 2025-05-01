@@ -1,5 +1,6 @@
 // Game state and intervals
 let timeInterval;
+let overtimeButton;
 let gameState = {
     hoursWorked: 0,
     isWorking: true,
@@ -7,13 +8,19 @@ let gameState = {
     hourlyRate: 15,
     dailyHours: 0,
     weeklyHours: 0,
-    status: 'Working :D'
+    status: 'Working :D',
+    weeksPassed: 0,
+    overtimeEligible: false,
+    overtimeHours: 0,
+    todayOvertimeUsed: false
 };
 
 // Initialize game on page load
 window.addEventListener('load', () => {
+    console.log("playing version 1.02");
     resetGame();
     startWork();
+    setupOvertimeButton();
 });
 
 function startWork() {
@@ -23,12 +30,51 @@ function startWork() {
     
     timeInterval = setInterval(updateGame, 1000);
     gameState.isWorking = true;
+    gameState.todayOvertimeUsed = false; // Reset daily overtime
     updateStatus();
+}
+
+function setupOvertimeButton() {
+    overtimeButton = document.createElement('button');
+    overtimeButton.id = 'overtime-button';
+    overtimeButton.textContent = 'OVERTIME Today?';
+    overtimeButton.style.display = 'none';
+    overtimeButton.onclick = startOvertime;
+    document.getElementById('game-container').appendChild(overtimeButton);
+}
+
+function startOvertime() {
+    if (!gameState.overtimeEligible || gameState.todayOvertimeUsed) return;
+    
+    // Activate exciting screen effect
+    document.body.classList.add('overtime-active');
+    
+    // Modify game state for overtime
+    gameState.isWorking = true;
+    gameState.status = 'OVERTIME ACTIVATED! ⚡';
+    gameState.overtimeHours++;
+    gameState.todayOvertimeUsed = true;
+    
+    // Additional salary bonus during overtime
+    gameState.salary += gameState.hourlyRate * 1.5;
+    gameState.hoursWorked += 1;
+    gameState.dailyHours++;
+    gameState.weeklyHours++;
+    
+    updateDisplay();
+    
+    // Deactivate overtime effect and button if 4 hours reached
+    if (gameState.overtimeHours >= 4) {
+        overtimeButton.style.display = 'none';
+        document.body.classList.remove('overtime-active');
+        gameState.overtimeEligible = false;
+        gameState.status = 'Overtime Complete';
+    }
 }
 
 function updateGame() {
     // Check for weekend break (every 120 hours)
-    if (gameState.weeklyHours >= 120) {
+    if (gameState.weeklyHours >= 120 && !gameState.todayOvertimeUsed) {
         gameState.isWorking = false;
         gameState.status = '"Enjoying" the weekend :(';
         if (gameState.weeklyHours >= 168) { // 120 + 48 hours
@@ -36,6 +82,14 @@ function updateGame() {
             gameState.isWorking = true;
             gameState.dailyHours = 0;
             gameState.status = 'Working :D';
+            gameState.weeksPassed++;
+            
+            // Check for overtime eligibility after a week
+            if (gameState.weeksPassed >= 1) {
+                gameState.overtimeEligible = true;
+                overtimeButton.style.display = 'block';
+                gameState.overtimeHours = 0;
+            }
         } else {
             gameState.weeklyHours++;
         }
@@ -44,7 +98,7 @@ function updateGame() {
     }
 
     // Check for daily work limit
-    if (gameState.dailyHours >= 8) {
+    if (gameState.dailyHours >= 8 && !gameState.todayOvertimeUsed) {
         gameState.isWorking = false;
         gameState.status = 'Unproductive :(';
         if (gameState.dailyHours >= 24) {
@@ -68,15 +122,15 @@ function updateGame() {
     updateDisplay();
 }
 
-function updateDisplay() {
-    document.getElementById('hours').textContent = Math.floor(gameState.hoursWorked);
-    document.getElementById('salary').textContent = '?';
-    document.getElementById('status').textContent = gameState.status;
-}
-
 function updateStatus() {
     const statusElement = document.getElementById('status');
     statusElement.textContent = gameState.status;
+}
+
+function updateDisplay() {
+    document.getElementById('hours').textContent = Math.floor(gameState.hoursWorked);
+    document.getElementById('salary').textContent = 'Doesn`t matter.';
+    document.getElementById('status').textContent = gameState.status;
 }
 
 function resetGame() {
@@ -91,8 +145,17 @@ function resetGame() {
         hourlyRate: 15,
         dailyHours: 0,
         weeklyHours: 0,
-        status: 'Working :D'
+        status: 'Working :D',
+        weeksPassed: 0,
+        overtimeEligible: false,
+        overtimeHours: 0,
+        todayOvertimeUsed: false
     };
+    
+    // Hide overtime button on reset
+    if (overtimeButton) {
+        overtimeButton.style.display = 'none';
+    }
     
     updateDisplay();
     startWork();
