@@ -13,10 +13,8 @@ const WORK_DAY_HOURS = 8;
 const BREAK_DURATION = 16; // seconds
 const UPDATE_INTERVAL = 1000; // milliseconds
 const OVERTIME_THRESHOLD = 8; // hours
-const SALARY_RATES = {
-    'salaryman': 20,
-    'salarywoman': 22  // Example of different base pay
-};
+const SECONDS_PER_WORK_HOUR = 1; // 10 seconds = 1 work hour (adjust as needed)
+const REGULAR_WORK_DAY = 8 * SECONDS_PER_WORK_HOUR; // 80 seconds = 8 work hours
 
 // Game Initialization
 function initializeGame() {
@@ -77,20 +75,39 @@ function startWork() {
 // Game State Update
 function updateGameState() {
     if (isWorking) {
-        hoursWorked++;
+        hoursWorked++; // This increments every second
         updateSalary();
         
-        if (hoursWorked % WORK_DAY_HOURS === 0) {
+        // Check for break every work day (in seconds)
+        if (hoursWorked % REGULAR_WORK_DAY === 0) {
             startBreak();
         }
+        
+        // Add overtime visual effects
+        checkOvertimeStatus();
     } else {
-        breakTimeRemaining--;
-        if (breakTimeRemaining <= 0) {
-            endBreak();
-        }
+        // ... rest of break logic
     }
-    
     updateDisplay();
+}
+
+function checkOvertimeStatus() {
+    const actualHours = hoursWorked / SECONDS_PER_WORK_HOUR;
+    const isOvertime = actualHours > 8;
+    
+    if (isOvertime && !document.body.classList.contains('overtime-mode')) {
+        activateOvertimeEffects();
+    } else if (!isOvertime && document.body.classList.contains('overtime-mode')) {
+        deactivateOvertimeEffects();
+    }
+}
+
+function activateOvertimeEffects() {
+    document.body.classList.add('overtime-mode');
+}
+
+function deactivateOvertimeEffects() {
+    document.body.classList.remove('overtime-mode');
 }
 
 // Break Management
@@ -106,8 +123,9 @@ function endBreak() {
 
 // Salary Calculation
 function updateSalary() {
-    const regularHours = Math.min(hoursWorked, OVERTIME_THRESHOLD);
-    const overtimeHours = Math.max(0, hoursWorked - OVERTIME_THRESHOLD);
+    const actualHours = hoursWorked / SECONDS_PER_WORK_HOUR;
+    const regularHours = Math.min(actualHours, 8);
+    const overtimeHours = Math.max(0, actualHours - 8);
     
     salary = (regularHours * hourlyRate) + 
              (overtimeHours * hourlyRate * overtimeMultiplier);
@@ -121,7 +139,8 @@ function updateDisplay() {
     const modeDisplay = document.getElementById('selected-mode');
     
     if (hoursDisplay) {
-        hoursDisplay.textContent = hoursWorked;
+        const actualHours = (hoursWorked / SECONDS_PER_WORK_HOUR).toFixed(1);
+        hoursDisplay.textContent = actualHours;
     }
     
     if (salaryDisplay) {
