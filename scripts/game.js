@@ -1,187 +1,186 @@
-// Game State
-let gameMode = null;
-let hoursWorked = 0;
-let timeInterval = null;
-let isWorking = true;
-let salary = 0;
-let hourlyRate = 20; // Base hourly rate
-let overtimeMultiplier = 1.5;
-let breakTimeRemaining = 0;
-
-// Game Constants
-const WORK_DAY_HOURS = 8;
-const BREAK_DURATION = 16; // seconds
-const UPDATE_INTERVAL = 1000; // milliseconds
-const OVERTIME_THRESHOLD = 8; // hours
-const SALARY_RATES = {
-    'salaryman': 20,
-    'salarywoman': 22  // Example of different base pay
+// Game state and intervals
+let timeInterval;
+let overtimeButton;
+let gameState = {
+    hoursWorked: 0,
+    isWorking: true,
+    salary: 0,
+    hourlyRate: 15,
+    dailyHours: 0,
+    weeklyHours: 0,
+    status: 'Working :D',
+    weeksPassed: 0,
+    overtimeEligible: false,
+    overtimeHours: 0,
+    todayOvertimeUsed: false
 };
 
-// Game Initialization
-function initializeGame() {
-    gameMode = null;
-    hoursWorked = 0;
-    salary = 0;
-    isWorking = true;
-    breakTimeRemaining = 0;
-    hourlyRate = 20;
-    updateDisplay();
-    showModeSelection();
-}
-
-// Mode Selection
-function selectMode(mode) {
-    if (mode !== 'salaryman' && mode !== 'salarywoman') {
-        console.error('Invalid mode selected');
-        return;
-    }
-    
-    gameMode = mode;
-    hourlyRate = SALARY_RATES[mode];
-    
-    // Update UI to show selected mode
-    document.getElementById('mode-selection').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    document.getElementById('control-buttons').style.display = 'block';
-    document.getElementById('selected-mode').textContent = 
-        mode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
-    
-    // Start game loop
+// Initialize game on page load
+window.addEventListener('load', () => {
+    console.log("playing version 1.02");
+    resetGame();
     startWork();
-    updateDisplay();
-}
+    setupOvertimeButton();
+});
 
-function showModeSelection() {
-    document.getElementById('mode-selection').style.display = 'block';
-    document.getElementById('game-screen').style.display = 'none';
-    document.getElementById('control-buttons').style.display = 'none';
-}
-
-// Main Game Loop
 function startWork() {
-    if (!gameMode) {
-        console.error('Cannot start work without selecting mode');
-        return;
-    }
-
     if (timeInterval) {
         clearInterval(timeInterval);
     }
-
-    timeInterval = setInterval(() => {
-        updateGameState();
-    }, UPDATE_INTERVAL);
+    
+    timeInterval = setInterval(updateGame, 1000);
+    gameState.isWorking = true;
+    gameState.todayOvertimeUsed = false; // Reset daily overtime
+    updateStatus();
 }
 
-// Game State Update
-function updateGameState() {
-    if (isWorking) {
-        hoursWorked++;
-        updateSalary();
-        
-        if (hoursWorked % WORK_DAY_HOURS === 0) {
-            startBreak();
+function setupOvertimeButton() {
+    overtimeButton = document.createElement('button');
+    overtimeButton.id = 'overtime-button';
+    overtimeButton.textContent = 'OVERTIME Today?';
+    overtimeButton.style.display = 'none';
+    overtimeButton.onclick = startOvertime;
+    document.getElementById('game-container').appendChild(overtimeButton);
+}
+
+function startOvertime() {
+    if (!gameState.overtimeEligible || gameState.todayOvertimeUsed) return;
+    
+    // Activate exciting screen effect
+    document.body.classList.add('overtime-active');
+    
+    // Modify game state for overtime
+    gameState.isWorking = true;
+    gameState.status = 'OVERTIME ACTIVATED! ⚡';
+    gameState.overtimeHours++;
+    gameState.todayOvertimeUsed = true;
+    
+    // Additional salary bonus during overtime
+    gameState.salary += gameState.hourlyRate * 1.5;
+    gameState.hoursWorked += 1;
+    gameState.dailyHours++;
+    gameState.weeklyHours++;
+    
+    updateDisplay();
+    
+    // Deactivate overtime effect and button if 4 hours reached
+    if (gameState.overtimeHours >= 4) {
+        overtimeButton.style.display = 'none';
+        document.body.classList.remove('overtime-active');
+        gameState.overtimeEligible = false;
+        gameState.status = 'Overtime Complete';
+    }
+}
+
+function updateGame() {
+    // Check for weekend break (every 120 hours)
+    if (gameState.weeklyHours >= 120 && !gameState.todayOvertimeUsed) {
+        gameState.isWorking = false;
+        gameState.status = '"Enjoying" the weekend :(';
+        if (gameState.weeklyHours >= 168) { // 120 + 48 hours
+            gameState.weeklyHours = 0;
+            gameState.isWorking = true;
+            gameState.dailyHours = 0;
+            gameState.status = 'Working :D';
+            gameState.weeksPassed++;
+            
+            // Check for overtime eligibility after a week
+            if (gameState.weeksPassed >= 1) {
+                gameState.overtimeEligible = true;
+                overtimeButton.style.display = 'block';
+                gameState.overtimeHours = 0;
+            }
+        } else {
+            gameState.weeklyHours++;
         }
-    } else {
-        breakTimeRemaining--;
-        if (breakTimeRemaining <= 0) {
-            endBreak();
+        updateDisplay();
+        return;
+    }
+
+    // Check for daily work limit
+    if (gameState.dailyHours >= 8 && !gameState.todayOvertimeUsed) {
+        gameState.isWorking = false;
+        gameState.status = 'Unproductive :(';
+        if (gameState.dailyHours >= 24) {
+            gameState.dailyHours = 0;
+            gameState.isWorking = true;
+            gameState.status = 'Working :D';
         }
     }
-    
+
+    // Update hours and salary if working
+    if (gameState.isWorking) {
+        gameState.hoursWorked += 1;
+        gameState.salary += gameState.hourlyRate;
+        gameState.dailyHours++;
+        gameState.weeklyHours++;
+    } else {
+        gameState.dailyHours++;
+        gameState.weeklyHours++;
+    }
+
     updateDisplay();
 }
 
-// Break Management
-function startBreak() {
-    isWorking = false;
-    breakTimeRemaining = BREAK_DURATION;
+function updateStatus() {
+    const statusElement = document.getElementById('status');
+    statusElement.textContent = gameState.status;
 }
 
-function endBreak() {
-    isWorking = true;
-    breakTimeRemaining = 0;
-}
-
-// Salary Calculation
-function updateSalary() {
-    const regularHours = Math.min(hoursWorked, OVERTIME_THRESHOLD);
-    const overtimeHours = Math.max(0, hoursWorked - OVERTIME_THRESHOLD);
-    
-    salary = (regularHours * hourlyRate) + 
-             (overtimeHours * hourlyRate * overtimeMultiplier);
-}
-
-// Display Updates
 function updateDisplay() {
-    const hoursDisplay = document.getElementById('hours');
-    const salaryDisplay = document.getElementById('salary');
-    const statusDisplay = document.getElementById('status');
-    const modeDisplay = document.getElementById('selected-mode');
-    
-    if (hoursDisplay) {
-        hoursDisplay.textContent = hoursWorked;
-    }
-    
-    if (salaryDisplay) {
-        salaryDisplay.textContent = `$${salary.toFixed(2)}`;
-    }
-    
-    if (statusDisplay) {
-        if (!isWorking) {
-            statusDisplay.textContent = `On break: ${breakTimeRemaining}s remaining`;
-        } else {
-            statusDisplay.textContent = 'Working';
-        }
-    }
-
-    if (modeDisplay && gameMode) {
-        modeDisplay.textContent = gameMode === 'salaryman' ? 'Salaryman' : 'Salarywoman';
-    }
+    document.getElementById('hours').textContent = Math.floor(gameState.hoursWorked);
+    document.getElementById('salary').textContent = 'Doesn`t matter.';
+    document.getElementById('status').textContent = gameState.status;
 }
 
-// Game Reset
 function resetGame() {
     if (timeInterval) {
         clearInterval(timeInterval);
     }
-    initializeGame();
-}
-
-// Game State Getters for Save/Load
-function getGameState() {
-    return {
-        gameMode,
-        hoursWorked,
-        isWorking,
-        salary,
-        hourlyRate,
-        breakTimeRemaining
+    
+    gameState = {
+        hoursWorked: 0,
+        isWorking: true,
+        salary: 0,
+        hourlyRate: 15,
+        dailyHours: 0,
+        weeklyHours: 0,
+        status: 'Working :D',
+        weeksPassed: 0,
+        overtimeEligible: false,
+        overtimeHours: 0,
+        todayOvertimeUsed: false
     };
-}
-
-// Game State Setters for Save/Load
-function setGameState(state) {
-    // Validate game mode before setting state
-    if (state.gameMode !== 'salaryman' && state.gameMode !== 'salarywoman') {
-        throw new Error('Invalid game mode in save file');
+    
+    // Hide overtime button on reset
+    if (overtimeButton) {
+        overtimeButton.style.display = 'none';
     }
-
-    gameMode = state.gameMode;
-    hoursWorked = state.hoursWorked;
-    isWorking = state.isWorking;
-    salary = state.salary;
-    hourlyRate = state.hourlyRate;
-    breakTimeRemaining = state.breakTimeRemaining;
-
-    // Update UI elements
-    document.getElementById('mode-selection').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    document.getElementById('control-buttons').style.display = 'block';
     
     updateDisplay();
+    startWork();
 }
 
-// Initialize game when page loads
-window.addEventListener('load', initializeGame);
+// State management functions used by save/load
+function getGameState() {
+    return { ...gameState };
+}
+
+function setGameState(newState) {
+    gameState = { ...newState };
+    updateDisplay();
+    startWork();
+}
+
+// Handle page reload
+window.addEventListener('beforeunload', function(event) {
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+});
+
+window.addEventListener('load', function() {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+        setGameState(JSON.parse(savedState));
+        localStorage.removeItem('gameState');
+    }
+});

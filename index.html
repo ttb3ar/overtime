@@ -3,11 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salary Game</title>
-    <link rel="stylesheet" href="design.css">
+    <title>OVERTIME</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.5s ease;
+        }
+
+        body.overtime-active {
+            background-color: #ff4500;
+            color: white;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        #control-buttons {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        #overtime-button {
+            display: none;
+            background-color: #ff4500;
+            color: white;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #game-container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #game-screen p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-    <div id="control-buttons" style="display: none;">
+    <div id="control-buttons">
         <button onclick="saveGame()">Save</button>
         <button onclick="loadGame()">Load</button>
         <button id="dark-mode-button" onclick="toggleDarkMode()">Dark Mode</button>
@@ -15,15 +82,9 @@
     </div>
 
     <div id="game-container">
-        <div id="mode-selection">
-            <p>choose mode:</p>
-            <button onclick="selectMode('salaryman')">salaryman</button>
-            <button onclick="selectMode('salarywoman')">salarywoman</button>
-        </div>
-        <div id="game-screen" style="display: none;">
-            <h2>Mode: <span id="selected-mode"></span></h2>
+        <div id="game-screen">
             <p>Hours worked: <span id="hours">0</span></p>
-            <p>Salary earned: <span id="salary">0.00</span></p>
+            <p>Salary earned: <span id="salary">?</span></p>
             <p>Status: <span id="status">Working</span></p>
         </div>
     </div>
