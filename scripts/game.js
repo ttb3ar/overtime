@@ -11,6 +11,7 @@ let gameState = {
     status: 'Working :D',
     weeksPassed: 0,
     overtimeEligible: false,
+    overtimeQueued: false,
     overtimeHours: 0,
     todayOvertimeUsed: false
 };
@@ -44,32 +45,27 @@ function setupOvertimeButton() {
 }
 
 function startOvertime() {
-    if (!gameState.overtimeEligible || gameState.todayOvertimeUsed) return;
-    
-    // Activate exciting screen effect
-    document.body.classList.add('overtime-active');
-    
-    // Modify game state for overtime
-    gameState.isWorking = true;
-    gameState.status = 'OVERTIME ACTIVATED! ⚡';
-    gameState.overtimeHours++;
-    gameState.todayOvertimeUsed = true;
-    
-    // Additional salary bonus during overtime
-    gameState.salary += gameState.hourlyRate * 1.5;
-    gameState.hoursWorked += 1;
-    gameState.dailyHours++;
-    gameState.weeklyHours++;
-    
-    updateDisplay();
-    
-    // Deactivate overtime effect and button if 4 hours reached
-    if (gameState.overtimeHours >= 4) {
-        overtimeButton.style.display = 'none';
-        document.body.classList.remove('overtime-active');
-        gameState.overtimeEligible = false;
-        gameState.status = 'Overtime Complete';
+    if (!gameState.overtimeEligible || gameState.todayOvertimeUsed || gameState.overtimeQueued) {
+        return;
     }
+    
+    // Queue overtime for later
+    gameState.overtimeQueued = true;
+    gameState.status = 'Overtime Queued for Today! 📋';
+    
+    // Update button text and disable it
+    overtimeButton.textContent = 'Overtime Queued ✓';
+    overtimeButton.style.backgroundColor = '#28a745'; // Green color
+    overtimeButton.disabled = true;
+    overtimeButton.style.cursor = 'not-allowed';
+    
+    // Brief visual feedback
+    document.body.style.backgroundColor = '#e6ffe6';
+    setTimeout(() => {
+        if (!document.body.classList.contains('overtime-active')) {
+            document.body.style.backgroundColor = '';
+        }
+    }, 500);
 }
 
 function updateGame() {
@@ -87,8 +83,16 @@ function updateGame() {
             // Check for overtime eligibility after a week
             if (gameState.weeksPassed >= 1) {
                 gameState.overtimeEligible = true;
-                overtimeButton.style.display = 'block';
                 gameState.overtimeHours = 0;
+                
+                // Show overtime button during work hours if eligible and not already queued/used
+                if (!gameState.todayOvertimeUsed && !gameState.overtimeQueued && gameState.dailyHours < 8) {
+                    overtimeButton.style.display = 'block';
+                    overtimeButton.textContent = 'OVERTIME Today?';
+                    overtimeButton.disabled = false;
+                    overtimeButton.style.cursor = 'pointer';
+                    overtimeButton.style.backgroundColor = '#ff4500';
+                }
             }
         } else {
             gameState.weeklyHours++;
@@ -98,13 +102,33 @@ function updateGame() {
     }
 
     // Check for daily work limit
-    if (gameState.dailyHours >= 8 && !gameState.todayOvertimeUsed) {
-        gameState.isWorking = false;
-        gameState.status = 'Unproductive :(';
+    if (gameState.dailyHours >= 8) {
+        if (gameState.overtimeQueued && !gameState.todayOvertimeUsed) {
+            // Activate queued overtime
+            activateQueuedOvertime();
+        } else if (!gameState.todayOvertimeUsed && !gameState.overtimeQueued) {
+            // Regular end of day - no overtime queued
+            gameState.isWorking = false;
+            gameState.status = 'Day Complete!';
+            
+            // Show overtime button if eligible and not already queued
+            if (gameState.overtimeEligible) {
+                overtimeButton.style.display = 'block';
+                overtimeButton.textContent = 'OVERTIME Today?';
+                overtimeButton.disabled = false;
+                overtimeButton.style.cursor = 'pointer';
+                overtimeButton.style.backgroundColor = '#ff4500';
+            }
+        } else if (gameState.todayOvertimeUsed && gameState.dailyHours >= 12) {
+            // End overtime period (8 regular + 4 overtime max)
+            gameState.isWorking = false;
+            gameState.status = 'Overtime Complete - Rest Time';
+            overtimeButton.style.display = 'none';
+        }
+        
+        // Reset for new day
         if (gameState.dailyHours >= 24) {
-            gameState.dailyHours = 0;
-            gameState.isWorking = true;
-            gameState.status = 'Working :D';
+            resetDailyState();
         }
     }
 
@@ -149,6 +173,7 @@ function resetGame() {
         weeksPassed: 0,
         overtimeEligible: false,
         overtimeHours: 0,
+        overtimeQueued: false,
         todayOvertimeUsed: false
     };
     
@@ -159,6 +184,36 @@ function resetGame() {
     
     updateDisplay();
     startWork();
+}
+
+function activateQueuedOvertime() {
+    // Activate exciting screen effect
+    document.body.classList.add('overtime-active');
+    
+    // Update game state
+    gameState.status = 'OVERTIME ACTIVATED! ⚡';
+    gameState.todayOvertimeUsed = true;
+    gameState.overtimeQueued = false;
+    gameState.isWorking = true;
+    
+    // Hide and reset overtime button
+    overtimeButton.style.display = 'none';
+    
+    // Set a timer to remove the screen effect after 3 seconds
+    setTimeout(() => {
+        document.body.classList.remove('overtime-active');
+        gameState.status = 'Working Overtime (1.5x pay!)';
+    }, 3000);
+}
+
+function resetDailyState() {
+    gameState.dailyHours = 0;
+    gameState.isWorking = true;
+    gameState.status = 'Working :D';
+    gameState.todayOvertimeUsed = false;
+    gameState.overtimeQueued = false;
+    overtimeButton.style.display = 'none';
+    document.body.classList.remove('overtime-active');
 }
 
 // State management functions used by save/load
