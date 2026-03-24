@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quarterly Performance Dashboard — Internal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- CRT overlay effects -->
+  <div class="crt-scanlines"></div>
+  <div class="crt-vignette"></div>
+
+  <div id="app">
+
+    <!-- HEADER BAR -->
+    <header id="header">
+      <div class="header-left">
+        <span class="blink">█</span>
+        <span id="company-name">INITECH CORP</span>
+        <span class="dim">// Employee Productivity Terminal v2.3.1</span>
+      </div>
+      <div class="header-right">
+        <span class="dim">SYS:</span>
+        <span id="system-status" class="ok">ONLINE</span>
+        <span class="separator">|</span>
+        <span class="dim">USER:</span>
+        <span id="player-name">EMPLOYEE_47</span>
+      </div>
+    </header>
+
+    <!-- DATE / TIME BAR -->
+    <div id="timebar">
+      <div class="timebar-segment">
+        <span class="label">DAY</span>
+        <span id="day-name">MONDAY</span>
+      </div>
+      <div class="timebar-segment">
+        <span class="label">WEEK</span>
+        <span id="week-number">1</span>
+      </div>
+      <div class="timebar-segment">
+        <span class="label">TIME</span>
+        <span id="game-time">09:00</span>
+      </div>
+      <div class="timebar-segment">
+        <span class="label">STATUS</span>
+        <span id="work-status" class="ok">WORKING</span>
+      </div>
+      <div class="timebar-segment grow">
+        <span class="label">SHIFT PROGRESS</span>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="shift-progress">
+            <div class="progress-fill" id="shift-fill" style="width: 0%"></div>
+          </div>
+          <span id="shift-pct">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <main id="main-layout">
+
+      <!-- LEFT PANEL: Stats -->
+      <section class="panel" id="panel-stats">
+        <div class="panel-title">[ METRICS ]</div>
+        <div class="stat-block">
+          <div class="stat-row">
+            <span class="stat-label">OVERTIME HOURS</span>
+            <span class="stat-value accent" id="ot-total">0.0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">OT / HOUR</span>
+            <span class="stat-value" id="ot-per-hour">0.0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">LIFETIME OT</span>
+            <span class="stat-value dim" id="ot-lifetime">0.0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">WEEKS EMPLOYED</span>
+            <span class="stat-value dim" id="weeks-employed">1</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="panel-title">[ MODIFIERS ]</div>
+        <div id="modifier-list" class="modifier-list">
+          <div class="modifier-row dim">— none active —</div>
+        </div>
+      </section>
+
+      <!-- CENTER PANEL: Main action area -->
+      <section class="panel" id="panel-main">
+
+        <!-- Training mode (week 1) -->
+        <div id="view-training" class="view active">
+          <div class="panel-title">[ ONBOARDING ]</div>
+          <div class="flavor-text" id="training-flavor">
+            Welcome to your first day. Please familiarise yourself with<br>
+            company policy. Do not make eye contact with management.<br>
+            Your badge does not open the third floor. Do not ask why.
+          </div>
+          <div class="ascii-art" id="main-ascii">
+<pre>
+  ____  _  _  ____  ____  ____  __  __  ____ 
+ / ___|| || ||  _ \| __ )|  _ \|  \/  ||  __|
+| |  _ | || || |_) |  _ \| | | | |\/| || |_  
+| |_| ||__  ||____/| |_) | |_| | |  | ||  _| 
+ \____|   |_||_|   |____/|____/|_|  |_||_|   
+</pre>
+          </div>
+          <div class="training-progress-wrap">
+            <div class="label">TRAINING COMPLETION</div>
+            <div class="progress-bar-wrap wide">
+              <div class="progress-bar">
+                <div class="progress-fill slow-pulse" id="training-fill" style="width: 0%"></div>
+              </div>
+              <span id="training-pct">0%</span>
+            </div>
+            <div class="dim small" id="training-eta">Est. completion: calculating...</div>
+          </div>
+        </div>
+
+        <!-- Post-training: overtime button unlocked -->
+        <div id="view-game" class="view">
+          <div class="panel-title">[ WORKSTATION ]</div>
+          <div class="flavor-text" id="game-flavor">
+            Training complete. You are now a valued member of the team.
+          </div>
+
+          <div id="action-buttons">
+            <button class="ot-btn" id="btn-overtime" disabled>
+              <span class="btn-label">CLOCK OVERTIME</span>
+              <span class="btn-sub" id="btn-ot-sub">[ available after hours ]</span>
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div id="event-area" class="hidden">
+            <div class="panel-title blink-slow">[ !! INCOMING EVENT !! ]</div>
+            <div id="event-text" class="flavor-text"></div>
+            <div id="event-choices" class="event-choices"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT PANEL: Upgrades / log -->
+      <section class="panel" id="panel-upgrades">
+        <div class="panel-title">[ UPGRADES ]</div>
+        <div id="upgrade-list">
+          <div class="upgrade-row locked dim">
+            <span>— locked until training complete —</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="panel-title">[ LOG ]</div>
+        <div id="log-list" class="log-list">
+          <div class="log-entry dim">System initialised.</div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer id="footer">
+      <div class="footer-left">
+        <button class="footer-btn" id="btn-save">[ SAVE ]</button>
+        <button class="footer-btn" id="btn-export">[ EXPORT ]</button>
+        <button class="footer-btn" id="btn-import">[ IMPORT ]</button>
+      </div>
+      <div class="footer-right dim small">
+        Initech Corp is not responsible for any loss of work-life balance.<br>
+        All overtime is voluntary. Some overtime is mandatory.
+      </div>
+    </footer>
+
+  </div><!-- /#app -->
+
+  <script src="js/constants.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/time.js"></script>
+  <script src="js/upgrades.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
