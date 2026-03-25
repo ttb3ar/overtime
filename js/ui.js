@@ -31,6 +31,7 @@ const UI = (() => {
   const FACES = {
     normal:       '( ˘ᵕ˘)',
     working:      '( •_•)',
+    lunch:        '( ˘^ ˘)',
     waiting:      '( •_•)',
     ot:           '(ง •_•)ง',
     done:         '( ˘ᵕ˘)',
@@ -42,6 +43,7 @@ const UI = (() => {
   const SPEECH = {
     normal:       null,
     working:      null,
+    lunch:        'i could be working right now...',
     waiting:      null,
     ot:           'billing extra hours...',
     done:         null,
@@ -59,6 +61,15 @@ const UI = (() => {
     'spreadsheet open. eyes closed.',
   ];
 
+  // Guilty quips cycled during lunch
+  const LUNCH_QUIPS = [
+    'i could be working right now...',
+    'eating a sad desk lunch.',
+    'checking flack between bites.',
+    'this sandwich cost $18.',
+    'technically this is networking.',
+  ];
+
   // ── Internal state ────────────────────────────────────────
   let _lastMood       = null;
   let _quipTimer      = 0;
@@ -70,10 +81,11 @@ const UI = (() => {
   function _show(el)  { el.classList.remove('hidden'); }
   function _hide(el)  { el.classList.add('hidden'); }
 
-  function _setProgress(pct) {
+  function _setProgress(pct, color) {
     const p = Math.round(pct * 100);
     el.progressFill.style.width = `${p}%`;
     el.progressLabel.textContent = `${p}%`;
+    el.progressFill.style.background = color || '';
   }
 
   // ── Header ────────────────────────────────────────────────
@@ -104,6 +116,7 @@ const UI = (() => {
       if (mood === 'ot')           el.character.classList.add('happy');
       if (mood === 'unproductive') el.character.classList.add('tired');
       if (mood === 'asleep')       el.character.classList.add('tired');
+      if (mood === 'lunch')        el.character.classList.add('guilty');
       _lastMood = mood;
 
       // speech bubble on mood change
@@ -115,6 +128,7 @@ const UI = (() => {
         if (mood === 'ot' || mood === 'unproductive') {
           setTimeout(() => _hide(el.speechBubble), 5000);
         }
+        // lunch speech persists and is refreshed by quip timer below
       } else {
         _hide(el.speechBubble);
       }
@@ -129,6 +143,15 @@ const UI = (() => {
         el.speechBubble.textContent = q;
         _show(el.speechBubble);
         setTimeout(() => _hide(el.speechBubble), 6000);
+      }
+    } else if (mood === 'lunch') {
+      // rotate guilty quips every ~20 real seconds during lunch
+      _quipTimer++;
+      if (_quipTimer >= 20) {
+        _quipTimer = 0;
+        const q = LUNCH_QUIPS[Math.floor(Math.random() * LUNCH_QUIPS.length)];
+        el.speechBubble.textContent = q;
+        _show(el.speechBubble);
       }
     } else {
       _quipTimer = 0;
@@ -154,6 +177,7 @@ const UI = (() => {
 
     const map = {
       working:      `${State.dayName()}. keep it up.`,
+      lunch:        'lunch break. 13:00 can\'t come soon enough.',
       waiting:      'stay late?',
       ot:           `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
       done:         `${State.dayName()} evening.`,
@@ -183,13 +207,21 @@ const UI = (() => {
       return;
     }
 
+    if (mood === 'lunch') {
+      _show(el.progressWrap);
+      // muted grey bar — this time doesn't count
+      _setProgress(Time.lunchProgress(), 'var(--mid)');
+      return;
+    }
+
     if (mood === 'ot') {
       _show(el.progressWrap);
-      _setProgress(Time.otProgress());
+      _setProgress(Time.otProgress(), 'var(--accent)');
       return;
     }
 
     _hide(el.progressWrap);
+    el.progressFill.style.background = '';
   }
 
   // ── Primary button ────────────────────────────────────────

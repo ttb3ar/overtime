@@ -14,7 +14,7 @@ const Time = (() => {
   let _otSkippedToday   = false;  // window passed without clicking
 
   // ── Character mood ────────────────────────────────────────
-  // 'normal' | 'working' | 'waiting' | 'ot' | 'unproductive' | 'weekend' | 'asleep'
+  // 'normal' | 'working' | 'lunch' | 'waiting' | 'ot' | 'unproductive' | 'weekend' | 'asleep'
   let _mood = 'normal';
 
   // ──────────────────────────────────────────────────────────
@@ -32,6 +32,14 @@ const Time = (() => {
     if (h < C.WORK_START || h >= C.WORK_END) return false;
     if (!State.flags.skipLunch && h >= C.LUNCH_START && h < C.LUNCH_END) return false;
     return true;
+  }
+
+  function _isLunch() {
+    if (State.flags.skipLunch) return false;
+    if (State.flags.outsourceSleep) return false;
+    if (_isWeekend() && !State.flags.sacrificeWeekend) return false;
+    const h = State.hour;
+    return h >= C.LUNCH_START && h < C.LUNCH_END;
   }
 
   function _isOTWindow() {
@@ -65,6 +73,9 @@ const Time = (() => {
     }
     if (!isWknd && (h < 7 || h >= 22)) return 'asleep';
 
+    // lunch check before other work-hours states
+    if (_isLunch()) return 'lunch';
+
     if (_otActive && _isOTWindow()) return 'ot';
     if (!_otActive && !_otCompletedToday && _isOTWindow()) return 'waiting';
     if (_otSkippedToday && h >= C.WORK_END + _otMaxHours) return 'unproductive';
@@ -81,13 +92,36 @@ const Time = (() => {
   function _processTick() {
     const prevDay = State.dayIndex;
 
-    // Accrue OT before advancing time so the full window is captured
+    // Slow tick during lunch and active OT: 1 game-min per real second.
+    // Normal speed everywhere else: MINS_PER_TICK (60) game-mins per second.
+    const slowTick = _isLunch() || (_otActive && _isOTWindow());
+    const mins     = slowTick ? 10 : C.MINS_PER_TICK;
+
+    // Accrue OT before advancing time so the full window is captured.
+    // Scale by mins/MINS_PER_TICK so total earnings stay consistent.
     if (_otActive && _isOTWindow()) {
-      const gained = C.AUTO_OT_BASE * State.autoMultiplier;
+      const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
       State.addOT(gained);
     }
 
-    State.tick();
+    // Advance game time manually (avoids touching state.js)
+    State.minute += mins;
+    while (State.minute >= 60) {
+      State.minute -= 60;
+      State.hour++;
+    }
+    if (State.hour >= 24) {
+      State.hour -= 24;
+      State.dayIndex++;
+    }
+    if (State.dayIndex >= 7) {
+      State.dayIndex = 0;
+      State.week++;
+    }
+    if (!State.trainingComplete && State.week > C.TRAINING_WEEKS) {
+      State.trainingComplete = true;
+    }
+    if (State.eventCooldown > 0) State.eventCooldown--;
 
     if (State.dayIndex !== prevDay) {
       _resetDailyOT();
@@ -153,6 +187,7 @@ const Time = (() => {
     otSkippedToday()   { return _otSkippedToday; },
     isOTWindow()       { return _isOTWindow(); },
     isWorkHours()      { return _isWorkHours(); },
+    isLunch()          { return _isLunch(); },
 
     otProgress() {
       if (!_otActive) return 0;
@@ -164,6 +199,13 @@ const Time = (() => {
       if (h < C.WORK_START) return 0;
       if (h >= C.WORK_END)  return 1;
       return (h - C.WORK_START) / (C.WORK_END - C.WORK_START);
+    },
+
+    lunchProgress() {
+      const h = State.hour + State.minute / 60;
+      if (h < C.LUNCH_START) return 0;
+      if (h >= C.LUNCH_END)  return 1;
+      return (h - C.LUNCH_START) / (C.LUNCH_END - C.LUNCH_START);
     },
 
     otMaxHours() { return _otMaxHours; },
