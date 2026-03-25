@@ -108,7 +108,7 @@ const Time = (() => {
     _mood = _deriveMood();
 
     State.otPerHour = _otActive
-      ? (C.AUTO_OT_BASE * State.autoMultiplier * 60).toFixed(2)
+      ? (C.AUTO_OT_BASE * State.autoMultiplier).toFixed(1)
       : 0;
 
     if (_onTick) _onTick();

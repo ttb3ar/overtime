@@ -17,7 +17,7 @@ const C = {
   TRAINING_WEEKS: 1,      // how many weeks before OT unlocks
 
   // ── Overtime accrual ─────────────────────────────────────
-  AUTO_OT_BASE:   0.0167,   // hours per tick from auto-overtime (base)
+  AUTO_OT_BASE:   1,   // hours per tick from auto-overtime (base)
 
   // ── Save ──────────────────────────────────────────────────
   AUTOSAVE_INTERVAL_MS: 30_000,
