@@ -17,14 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. Wire up the overtime button
   document.getElementById('btn-primary').addEventListener('click', () => {
     if (!State.trainingComplete) return;
+    if (!Time.isOTWindow()) return;
+    if (Time.otActive()) return;
+    if (Time.otCompletedToday()) return;
+    if (Time.otSkippedToday()) return;
 
-    if (Time.isOTWindow() && !Time.otActive() && !Time.otDoneToday()) {
-      const activated = Time.activateOT();
-      if (activated) {
-        UI.showToast('overtime started. good luck.', 'good');
-        UI.log('started overtime.', 'upgrade');
-        UI.bounceCharacter();
-      }
+    const activated = Time.activateOT();
+    if (activated) {
+      UI.showToast('overtime started. good luck.', 'good');
+      UI.bounceCharacter();
     }
   });
 

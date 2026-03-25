@@ -31,7 +31,9 @@ const UI = (() => {
   const FACES = {
     normal:       '( ˘ᵕ˘)',
     working:      '( •_•)',
+    waiting:      '( •_•)',
     ot:           '(ง •_•)ง',
+    done:         '( ˘ᵕ˘)',
     unproductive: '(._. )',
     weekend:      '( ˘ω˘)',
     asleep:       '(-.-)zzz',
@@ -40,7 +42,9 @@ const UI = (() => {
   const SPEECH = {
     normal:       null,
     working:      null,
+    waiting:      null,
     ot:           'billing extra hours...',
+    done:         null,
     unproductive: '...i could have stayed.',
     weekend:      null,
     asleep:       null,
@@ -107,6 +111,10 @@ const UI = (() => {
       if (speech) {
         el.speechBubble.textContent = speech;
         _show(el.speechBubble);
+        // transient moods: hide after a few seconds
+        if (mood === 'ot' || mood === 'unproductive') {
+          setTimeout(() => _hide(el.speechBubble), 5000);
+        }
       } else {
         _hide(el.speechBubble);
       }
@@ -146,18 +154,14 @@ const UI = (() => {
 
     const map = {
       working:      `${State.dayName()}. keep it up.`,
+      waiting:      'stay late?',
       ot:           `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
+      done:         `${State.dayName()} evening.`,
       unproductive: `${State.dayName()} evening.`,
       weekend:      'weekend.',
       asleep:       'sleeping.',
       normal:       `${State.dayName()}. work starts at ${C.WORK_START}:00.`,
     };
-
-    // special: OT window is open but not yet activated
-    if (mood === 'unproductive' && Time.isOTWindow() && !Time.otActive()) {
-      el.statusLine.textContent = 'stay late?';
-      return;
-    }
 
     el.statusLine.textContent = map[mood] ?? '';
   }
@@ -209,7 +213,7 @@ const UI = (() => {
       return;
     }
 
-    if (inOTWindow && !otActive && !Time.otDoneToday()) {
+    if (inOTWindow && !otActive && !Time.otCompletedToday() && !Time.otSkippedToday()) {
       // the one click of the day
       btn.textContent = 'stay late';
       btn.classList.add('ot-available');
@@ -318,7 +322,7 @@ const UI = (() => {
   return {
 
     init() {
-      _cache();
+      _cache();  // must come first — populates el.*
 
       // shelf toggle
       el.shelfToggle.addEventListener('click', () => {
@@ -346,12 +350,20 @@ const UI = (() => {
       el.character.classList.add('happy');
     },
 
-    /** Push a line to the log */
-    log(text, type = '') {
+    /** Push a line to the log — clears after 6s unless permanent */
+    log(text, type = '', permanent = false) {
       _logEntries.unshift({ text, type });
       if (_logEntries.length > 50) _logEntries.pop();
       el.logLatest.textContent = text;
       el.logLatest.className   = type;
+      if (!permanent) {
+        setTimeout(() => {
+          if (el.logLatest.textContent === text) {
+            el.logLatest.textContent = '';
+            el.logLatest.className = '';
+          }
+        }, 6000);
+      }
     },
 
     /** Show a toast notification */

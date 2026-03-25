@@ -40,10 +40,11 @@ html, body {
 
 /* ── App shell ──────────────────────────────────────────────── */
 #app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: hidden;
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
@@ -76,8 +77,9 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 28px;
-  padding: 48px 24px;
+  padding: 48px 24px 250px;  /* bottom clears shelf + log bar */
   text-align: center;
+  min-height: 0;
 }
 
 /* ── Character ──────────────────────────────────────────────── */
@@ -246,13 +248,17 @@ html, body {
 
 /* ── Upgrade shelf ──────────────────────────────────────────── */
 #upgrade-shelf {
+  position: fixed;
+  bottom: 40px;        /* sits just above the log bar */
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  padding: 0 0 16px;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: center;
-  gap: 16px;
+  gap: 0;
+  z-index: 100;
 }
 
 #shelf-toggle {
@@ -260,25 +266,36 @@ html, body {
   font-size: 11px;
   font-weight: 300;
   color: var(--mid);
-  background: none;
+  background: var(--bg);
   border: none;
   cursor: pointer;
   letter-spacing: 0.05em;
   transition: color 0.15s ease;
+  padding: 8px 0;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 #shelf-toggle:hover { color: var(--fg); }
 
 #upgrade-grid {
-  display: none;
-  width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  padding: 0 24px;
+  padding: 0 24px 16px;
+  width: 100%;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
 }
 
-#upgrade-grid.open { display: grid; }
+#upgrade-grid.open {
+  max-height: 600px;
+  opacity: 1;
+}
 
 .upgrade-card {
   background: white;
@@ -341,15 +358,21 @@ html, body {
 
 /* ── Log bar / footer ───────────────────────────────────────── */
 #log-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 20px;
+  padding: 0 24px 16px;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--mid);
+  background: var(--bg);
+  z-index: 101;
 }
 
 #log-latest {
