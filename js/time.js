@@ -81,15 +81,16 @@ const Time = (() => {
   function _processTick() {
     const prevDay = State.dayIndex;
 
+    // Accrue OT before advancing time so the full window is captured
+    if (_otActive && _isOTWindow()) {
+      const gained = C.AUTO_OT_BASE * State.autoMultiplier;
+      State.addOT(gained);
+    }
+
     State.tick();
 
     if (State.dayIndex !== prevDay) {
       _resetDailyOT();
-    }
-
-    if (_otActive && _isOTWindow()) {
-      const gained = C.AUTO_OT_BASE * State.autoMultiplier;
-      State.addOT(gained);
     }
 
     // OT window closed while active — mark completed
