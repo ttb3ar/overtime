@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // 1. Load save (or start fresh)
-  //Save.load();
+  Save.load();
 
   // 2. Init UI (caches elements, wires shelf toggle)
   UI.init();
@@ -11,11 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Start the clock — UI.update runs every tick
   Time.start(() => {
     UI.update();
-    Save.maybeAutosave();
-  });
-
-  Time.start(() => {
-    console.log(State.dayName(), State.timeString(), 'mood:', Time.mood());
     Save.maybeAutosave();
   });
 
@@ -45,6 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-import').addEventListener('click', () => {
     Save.importSave();
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    if (!confirm('reset everything and start over?')) return;
+    Save.reset();
+    UI.showToast('see you monday.', '');
+    UI.update();
   });
 
   // 6. Initial render
