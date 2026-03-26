@@ -52,7 +52,6 @@ const UI = (() => {
     asleep:       null,
   };
 
-  // Occasional idle quips during working hours
   const WORK_QUIPS = [
     'pretending to read emails.',
     'awaiting further instructions.',
@@ -61,25 +60,24 @@ const UI = (() => {
     'spreadsheet open. eyes closed.',
   ];
 
-  // Guilty quips cycled during lunch
   const LUNCH_QUIPS = [
     'i could be working right now...',
     'eating a sad desk lunch.',
-    'checking flack between bites.',
+    'checking plack between bites.',
     'this sandwich cost $18.',
     'technically this is networking.',
   ];
 
   // ── Internal state ────────────────────────────────────────
-  let _lastMood       = null;
-  let _quipTimer      = 0;
-  let _shelfOpen      = false;
-  let _logEntries     = [];
+  let _lastMood   = null;
+  let _quipTimer  = 0;
+  let _shelfOpen  = false;
+  let _logEntries = [];
 
   // ── Helpers ───────────────────────────────────────────────
 
-  function _show(el)  { el.classList.remove('hidden'); }
-  function _hide(el)  { el.classList.add('hidden'); }
+  function _show(e)  { e.classList.remove('hidden'); }
+  function _hide(e)  { e.classList.add('hidden'); }
 
   function _setProgress(pct, color) {
     const p = Math.round(pct * 100);
@@ -107,10 +105,8 @@ const UI = (() => {
   function _updateCharacter() {
     const mood = Time.mood();
 
-    // update face
     el.character.textContent = FACES[mood] ?? FACES.normal;
 
-    // swap css class for animations
     if (mood !== _lastMood) {
       el.character.className = '';
       if (mood === 'ot')           el.character.classList.add('happy');
@@ -119,25 +115,21 @@ const UI = (() => {
       if (mood === 'lunch')        el.character.classList.add('guilty');
       _lastMood = mood;
 
-      // speech bubble on mood change
       const speech = SPEECH[mood];
       if (speech) {
         el.speechBubble.textContent = speech;
         _show(el.speechBubble);
-        // transient moods: hide after a few seconds
         if (mood === 'ot' || mood === 'unproductive') {
           setTimeout(() => _hide(el.speechBubble), 5000);
         }
-        // lunch speech persists and is refreshed by quip timer below
       } else {
         _hide(el.speechBubble);
       }
     }
 
-    // occasional working quips
     if (mood === 'working') {
       _quipTimer++;
-      if (_quipTimer >= 45) {  // every ~45 ticks
+      if (_quipTimer >= 45) {
         _quipTimer = 0;
         const q = WORK_QUIPS[Math.floor(Math.random() * WORK_QUIPS.length)];
         el.speechBubble.textContent = q;
@@ -145,7 +137,6 @@ const UI = (() => {
         setTimeout(() => _hide(el.speechBubble), 6000);
       }
     } else if (mood === 'lunch') {
-      // rotate guilty quips every ~20 real seconds during lunch
       _quipTimer++;
       if (_quipTimer >= 20) {
         _quipTimer = 0;
@@ -162,7 +153,6 @@ const UI = (() => {
 
   function _updateStatus() {
     const mood = Time.mood();
-    const h    = State.hour;
 
     if (!State.trainingComplete) {
       const pct = Math.round(State.trainingProgress() * 100);
@@ -209,7 +199,6 @@ const UI = (() => {
 
     if (mood === 'lunch') {
       _show(el.progressWrap);
-      // muted grey bar — this time doesn't count
       _setProgress(Time.lunchProgress(), 'var(--mid)');
       return;
     }
@@ -227,9 +216,8 @@ const UI = (() => {
   // ── Primary button ────────────────────────────────────────
 
   function _updateButton() {
-    const btn  = el.btnPrimary;
+    const btn = el.btnPrimary;
 
-    // hide button during training or active event
     if (!State.trainingComplete || State.activeEvent) {
       _hide(btn);
       return;
@@ -239,14 +227,12 @@ const UI = (() => {
     const otActive   = Time.otActive();
     const autoOT     = State.flags.autoOT;
 
-    // auto-OT upgrade: button never needed
     if (autoOT) {
       _hide(btn);
       return;
     }
 
     if (inOTWindow && !otActive && !Time.otCompletedToday() && !Time.otSkippedToday()) {
-      // the one click of the day
       btn.textContent = 'OVERTIME';
       btn.classList.add('ot-available');
       btn.disabled = false;
@@ -254,7 +240,6 @@ const UI = (() => {
       return;
     }
 
-    // nothing actionable right now
     _hide(btn);
     btn.classList.remove('ot-available');
   }
@@ -271,7 +256,6 @@ const UI = (() => {
     _show(el.eventCard);
     el.eventText.textContent = ev.text;
 
-    // only rebuild choices if they changed
     if (el.eventChoices.dataset.eventId !== ev.id) {
       el.eventChoices.dataset.eventId = ev.id;
       el.eventChoices.innerHTML = '';
@@ -279,9 +263,7 @@ const UI = (() => {
         const btn = document.createElement('button');
         btn.className = 'event-btn';
         btn.textContent = choice.label;
-        btn.addEventListener('click', () => {
-          Events.resolve(i);
-        });
+        btn.addEventListener('click', () => Events.resolve(i));
         el.eventChoices.appendChild(btn);
       });
     }
@@ -296,7 +278,6 @@ const UI = (() => {
     }
     _show(el.upgradeShelf);
 
-    // rebuild grid contents (only when bought set changes)
     const allUpgrades = Upgrades.all();
     if (!allUpgrades.length) return;
 
@@ -354,9 +335,8 @@ const UI = (() => {
   return {
 
     init() {
-      _cache();  // must come first — populates el.*
+      _cache();
 
-      // shelf toggle
       el.shelfToggle.addEventListener('click', () => {
         _shelfOpen = !_shelfOpen;
         el.upgradeGrid.className = _shelfOpen ? 'open' : '';
@@ -364,7 +344,6 @@ const UI = (() => {
       });
     },
 
-    /** Called every tick */
     update() {
       _updateHeader();
       _updateCharacter();
@@ -375,14 +354,12 @@ const UI = (() => {
       _updateUpgradeShelf();
     },
 
-    /** Trigger a bounce animation on the character */
     bounceCharacter() {
       el.character.classList.remove('happy');
-      void el.character.offsetWidth; // force reflow
+      void el.character.offsetWidth;
       el.character.classList.add('happy');
     },
 
-    /** Push a line to the log — clears after 6s unless permanent */
     log(text, type = '', permanent = false) {
       _logEntries.unshift({ text, type });
       if (_logEntries.length > 50) _logEntries.pop();
@@ -398,7 +375,6 @@ const UI = (() => {
       }
     },
 
-    /** Show a toast notification */
     showToast(text, type = '') {
       const t = document.createElement('div');
       t.className = `toast${type ? ' ' + type : ''}`;
