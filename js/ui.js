@@ -247,7 +247,7 @@ const UI = (() => {
 
     if (inOTWindow && !otActive && !Time.otCompletedToday() && !Time.otSkippedToday()) {
       // the one click of the day
-      btn.textContent = 'stay late';
+      btn.textContent = 'OVERTIME';
       btn.classList.add('ot-available');
       btn.disabled = false;
       _show(btn);
