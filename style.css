@@ -101,9 +101,10 @@ html, body {
   user-select: none;
 }
 
-#character.tired  { filter: saturate(0.3); opacity: 0.7; }
-#character.happy  { animation: bounce 0.5s ease; }
+#character.tired    { filter: saturate(0.3); opacity: 0.7; }
+#character.happy    { animation: bounce 0.5s ease; }
 #character.stressed { animation: wobble 0.4s ease; }
+#character.guilty   { animation: breathe 7s ease-in-out infinite; opacity: 0.75; }
 
 #speech-bubble {
   font-size: 12px;
@@ -148,7 +149,7 @@ html, body {
   width: 0%;
   background: var(--fg);
   border-radius: 99px;
-  transition: width 1s ease;
+  transition: width 1s ease, background 0.4s ease;
 }
 
 #progress-label {
