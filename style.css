@@ -60,6 +60,7 @@ html, body {
   font-weight: 300;
   color: var(--mid);
   letter-spacing: 0.02em;
+  user-select: none;
 }
 
 #ot-display {
@@ -80,6 +81,7 @@ html, body {
   padding: 48px 24px 250px;  /* bottom clears shelf + log bar */
   text-align: center;
   min-height: 0;
+  user-select: none;
 }
 
 /* ── Character ──────────────────────────────────────────────── */
@@ -89,6 +91,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  user-select: none;
 }
 
 #character {
@@ -170,7 +173,7 @@ html, body {
   border-radius: var(--radius);
   padding: 14px 36px;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease; 
 }
 
 #btn-primary:hover {
@@ -277,6 +280,7 @@ html, body {
   text-align: center;
   position: relative;
   z-index: 1;
+  user-select: none;
 }
 
 #shelf-toggle:hover { color: var(--fg); }
@@ -291,6 +295,7 @@ html, body {
   max-height: 0;
   opacity: 0;
   transition: max-height 0.35s ease, opacity 0.25s ease;
+  user-select: none;
 }
 
 #upgrade-grid.open {
@@ -374,6 +379,7 @@ html, body {
   color: var(--mid);
   background: var(--bg);
   z-index: 101;
+  user-select: none;
 }
 
 #log-latest {
@@ -430,6 +436,7 @@ html, body {
   white-space: nowrap;
   animation: toast-up 0.25s cubic-bezier(0.34,1.56,0.64,1),
              toast-fade 0.4s ease 2.4s forwards;
+  user-select: none;
 }
 
 .toast.good { background: var(--good); }

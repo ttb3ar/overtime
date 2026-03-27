@@ -68,6 +68,21 @@ const UI = (() => {
     'technically this is networking.',
   ];
 
+  const CLICK_QUIPS = [
+    'please. i\'m busy.',
+    'do you mind?',
+    'that doesn\'t help.',
+    'i\'m not a toy.',
+    'i can feel that.',
+    'okay. okay. okay.',
+    'yes. still here.',
+    'noted.',
+    '...',
+    'you again.',
+    'stop. i\'m concentrating.',
+    'i see you.',
+  ];
+
   // ── Internal state ────────────────────────────────────────
   let _lastMood   = null;
   let _quipTimer  = 0;
@@ -381,6 +396,18 @@ const UI = (() => {
       t.textContent = text;
       el.toastLayer.appendChild(t);
       setTimeout(() => t.remove(), 3000);
+    },
+
+    showClickQuip() {
+        const q = CLICK_QUIPS[Math.floor(Math.random() * CLICK_QUIPS.length)];
+        el.speechBubble.textContent = q;
+        _show(el.speechBubble);
+        clearTimeout(el.speechBubble._quipTimeout);
+        el.speechBubble._quipTimeout = setTimeout(() => _hide(el.speechBubble), 3000);
+        // bounce
+        el.character.classList.remove('happy');
+        void el.character.offsetWidth; // force reflow
+        el.character.classList.add('happy');
     },
   };
 
