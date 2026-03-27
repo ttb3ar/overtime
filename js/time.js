@@ -3,18 +3,18 @@
 
 const Time = (() => {
 
-  let _intervalId = null;
-  let _onTick     = null;
+  let _intervalId   = null;
+  let _onTick       = null;
+  let _currentDelay = null;  // tracks active interval delay to avoid needless restarts
 
   // ── OT session state ──────────────────────────────────────
-  let _otActive         = false;  // player clicked "stay late" today
+  let _otActive         = false;
   let _otStartHour      = null;
   let _otMaxHours       = 2;
-  let _otCompletedToday = false;  // finished a full OT session today
-  let _otSkippedToday   = false;  // window passed without clicking
+  let _otCompletedToday = false;
+  let _otSkippedToday   = false;
 
   // ── Character mood ────────────────────────────────────────
-  // 'normal' | 'working' | 'lunch' | 'waiting' | 'ot' | 'unproductive' | 'weekend' | 'asleep'
   let _mood = 'normal';
 
   // ──────────────────────────────────────────────────────────
@@ -73,7 +73,6 @@ const Time = (() => {
     }
     if (!isWknd && (h < 7 || h >= 22)) return 'asleep';
 
-    // lunch check before other work-hours states
     if (_isLunch()) return 'lunch';
 
     if (_otActive && _isOTWindow()) return 'ot';
@@ -85,6 +84,14 @@ const Time = (() => {
     return 'normal';
   }
 
+  // Restart the interval with a new delay only if it has changed
+  function _setTickDelay(ms) {
+    if (_currentDelay === ms) return;
+    _currentDelay = ms;
+    clearInterval(_intervalId);
+    _intervalId = setInterval(_processTick, ms);
+  }
+
   // ──────────────────────────────────────────────────────────
   // Per-tick logic
   // ──────────────────────────────────────────────────────────
@@ -92,19 +99,19 @@ const Time = (() => {
   function _processTick() {
     const prevDay = State.dayIndex;
 
-    // Slow tick during lunch and active OT: 1 game-min per real second.
-    // Normal speed everywhere else: MINS_PER_TICK (60) game-mins per second.
+    // Slow periods: 1 game-min per tick, but 10x faster ticks (100ms).
+    // Normal: MINS_PER_TICK (60) game-mins per tick at 1000ms.
+    // Net game-time rate is identical; the clock just reads smoothly.
     const slowTick = _isLunch() || (_otActive && _isOTWindow());
-    const mins     = slowTick ? 10 : C.MINS_PER_TICK;
+    const mins     = slowTick ? 1 : C.MINS_PER_TICK;
 
-    // Accrue OT before advancing time so the full window is captured.
-    // Scale by mins/MINS_PER_TICK so total earnings stay consistent.
+    // OT accrual scaled to real-time rate so earnings are consistent
     if (_otActive && _isOTWindow()) {
       const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
       State.addOT(gained);
     }
 
-    // Advance game time manually (avoids touching state.js)
+    // Advance game time
     State.minute += mins;
     while (State.minute >= 60) {
       State.minute -= 60;
@@ -146,6 +153,10 @@ const Time = (() => {
       ? (C.AUTO_OT_BASE * State.autoMultiplier).toFixed(1)
       : 0;
 
+    // Adjust tick rate for next interval based on current state
+    const nowSlow = _isLunch() || (_otActive && _isOTWindow());
+    _setTickDelay(nowSlow ? C.TICK_MS / 10 : C.TICK_MS);
+
     if (_onTick) _onTick();
   }
 
@@ -157,13 +168,15 @@ const Time = (() => {
 
     start(onTickCallback) {
       _onTick = onTickCallback;
-      if (_intervalId) clearInterval(_intervalId);
+      clearInterval(_intervalId);
+      _currentDelay = C.TICK_MS;
       _intervalId = setInterval(_processTick, C.TICK_MS);
     },
 
     stop() {
       clearInterval(_intervalId);
-      _intervalId = null;
+      _intervalId   = null;
+      _currentDelay = null;
     },
 
     activateOT() {
