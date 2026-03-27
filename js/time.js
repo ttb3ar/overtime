@@ -3,8 +3,9 @@
 
 const Time = (() => {
 
-  let _intervalId = null;
-  let _onTick     = null;
+  let _intervalId   = null;
+  let _onTick       = null;
+  let _currentDelay = null;  // tracks active interval delay to avoid needless restarts
 
   // ── OT session state ──────────────────────────────────────
   let _otActive         = false;
@@ -83,6 +84,14 @@ const Time = (() => {
     return 'normal';
   }
 
+  // Restart the interval with a new delay only if it has changed
+  function _setTickDelay(ms) {
+    if (_currentDelay === ms) return;
+    _currentDelay = ms;
+    clearInterval(_intervalId);
+    _intervalId = setInterval(_processTick, ms);
+  }
+
   // ──────────────────────────────────────────────────────────
   // Per-tick logic
   // ──────────────────────────────────────────────────────────
@@ -90,19 +99,19 @@ const Time = (() => {
   function _processTick() {
     const prevDay = State.dayIndex;
 
-    // Slow periods (lunch, active OT): advance 1 game-min per real second.
-    // Normal periods: advance MINS_PER_TICK (60) game-mins per real second.
+    // Slow periods: 1 game-min per tick, but 10x faster ticks (100ms).
+    // Normal: MINS_PER_TICK (60) game-mins per tick at 1000ms.
+    // Net game-time rate is identical; the clock just reads smoothly.
     const slowTick = _isLunch() || (_otActive && _isOTWindow());
     const mins     = slowTick ? 1 : C.MINS_PER_TICK;
 
-    // OT accrual — scale by mins/MINS_PER_TICK so total earned is identical
-    // regardless of tick speed (1 min tick earns 1/60th of a full tick)
+    // OT accrual scaled to real-time rate so earnings are consistent
     if (_otActive && _isOTWindow()) {
       const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
       State.addOT(gained);
     }
 
-    // Advance game time by `mins` minutes
+    // Advance game time
     State.minute += mins;
     while (State.minute >= 60) {
       State.minute -= 60;
@@ -144,6 +153,10 @@ const Time = (() => {
       ? (C.AUTO_OT_BASE * State.autoMultiplier).toFixed(1)
       : 0;
 
+    // Adjust tick rate for next interval based on current state
+    const nowSlow = _isLunch() || (_otActive && _isOTWindow());
+    _setTickDelay(nowSlow ? C.TICK_MS / 10 : C.TICK_MS);
+
     if (_onTick) _onTick();
   }
 
@@ -155,13 +168,15 @@ const Time = (() => {
 
     start(onTickCallback) {
       _onTick = onTickCallback;
-      if (_intervalId) clearInterval(_intervalId);
+      clearInterval(_intervalId);
+      _currentDelay = C.TICK_MS;
       _intervalId = setInterval(_processTick, C.TICK_MS);
     },
 
     stop() {
       clearInterval(_intervalId);
-      _intervalId = null;
+      _intervalId   = null;
+      _currentDelay = null;
     },
 
     activateOT() {
