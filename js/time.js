@@ -105,6 +105,8 @@ const Time = (() => {
     const slowTick = _isLunch() || (_otActive && _isOTWindow());
     const mins     = slowTick ? 1 : C.MINS_PER_TICK;
 
+
+
     // OT accrual scaled to real-time rate so earnings are consistent
     if (_otActive && _isOTWindow()) {
       const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
@@ -222,6 +224,33 @@ const Time = (() => {
     },
 
     otMaxHours() { return _otMaxHours; },
-  };
+
+    clickTick() {
+      const prevDay = State.dayIndex;
+
+      State.minute += State.clickMinutes ?? 1;
+      while (State.minute >= 60) {
+      State.minute -= 60;
+      State.hour++;
+      }
+      if (State.hour >= 24) {
+      State.hour -= 24;
+      State.dayIndex++;
+      }
+      if (State.dayIndex >= 7) {
+      State.dayIndex = 0;
+      State.week++;
+      }
+      if (!State.trainingComplete && State.week > C.TRAINING_WEEKS) {
+      State.trainingComplete = true;
+      }
+      if (State.eventCooldown > 0) State.eventCooldown--;
+
+      if (State.dayIndex !== prevDay) _resetDailyOT();
+
+      _mood = _deriveMood();
+      if (_onTick) _onTick();
+    },
+ };
 
 })();

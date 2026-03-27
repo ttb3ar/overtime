@@ -50,6 +50,21 @@ document.addEventListener('DOMContentLoaded', () => {
     UI.update();
   });
 
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#btn-primary'))   return;
+    if (e.target.closest('#event-choices')) return;
+    if (e.target.closest('#upgrade-shelf')) return;
+    if (e.target.closest('#log-bar'))       return;
+    if (e.target.closest('#shelf-toggle'))   return;
+
+    if (e.target.closest('#character-wrap')) {
+        UI.showClickQuip();
+        return;
+    }
+
+    Time.clickTick();
+  });
+
   // 6. Initial render
   UI.update();
 
