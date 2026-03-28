@@ -68,6 +68,11 @@ html, body {
   font-weight: 400;
 }
 
+#wh-display {
+  color: var(--accent2);
+  font-weight: 400;
+}
+
 /* ── Stage ──────────────────────────────────────────────────── */
 #stage {
   flex: 1;

@@ -17,6 +17,8 @@ const State = {
   ot:         0,      // spendable overtime hours
   otLifetime: 0,      // total ever earned (for stats)
   otPerHour:  0,      // current auto-rate (display only)
+  workHours:         0,   // spendable work hours (early-game currency)
+  workHoursLifetime: 0,   // total ever earned
 
   // ── Upgrades ─────────────────────────────────────────────
   // bought is a Set of upgrade IDs
@@ -113,6 +115,11 @@ const State = {
     this.otLifetime += amount;
   },
 
+  addWorkHours(amount) {
+    this.workHours         += amount;
+    this.workHoursLifetime += amount;
+  },
+
   /** Spend overtime hours — returns false if insufficient */
   spendOT(amount) {
     if (this.ot < amount) return false;
@@ -135,6 +142,8 @@ const State = {
       autoMultiplier:   this.autoMultiplier,
       clickMultiplier:  this.clickMultiplier,
       eventCooldown:    this.eventCooldown,
+      workHours:        this.workHours,
+      workHoursLifetime:this.workHoursLifetime,
     };
   },
 
@@ -151,7 +160,9 @@ const State = {
     this.flags            = { ...this.flags, ...(data.flags ?? {}) };
     this.autoMultiplier   = data.autoMultiplier   ?? 1;
     this.clickMultiplier  = data.clickMultiplier  ?? 1;
-    this.eventCooldown    = data.eventCooldown     ?? 0;
+    this.eventCooldown    = data.eventCooldown    ?? 0;
+    this.workHours         = data.workHours       ?? 0;
+    this.workHoursLifetime = data.workHoursLifetime ?? 0;
     // re-derive modifiers from bought upgrades
     this.modifiers = [];
   },

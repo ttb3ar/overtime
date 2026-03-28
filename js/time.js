@@ -113,6 +113,12 @@ const Time = (() => {
       State.addOT(gained);
     }
 
+    // Work hour accrual (base currency, earned during working shifts only)
+    if (_isWorkHours() && !_otActive) {
+      const workedFraction = mins / 60; // fraction of a game-hour this tick
+      State.addWorkHours(workedFraction);
+    }
+
     // Advance game time
     State.minute += mins;
     while (State.minute >= 60) {
@@ -245,7 +251,10 @@ const Time = (() => {
       State.trainingComplete = true;
       }
       if (State.eventCooldown > 0) State.eventCooldown--;
-
+      if (_isWorkHours()) {
+        const mins = Math.min(State.clickMinutes ?? 1, 60 - State.minute % 60);
+        State.addWorkHours(mins / 60);
+      }
       if (State.dayIndex !== prevDay) _resetDailyOT();
 
       _mood = _deriveMood();

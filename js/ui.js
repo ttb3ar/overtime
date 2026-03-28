@@ -25,6 +25,8 @@ const UI = (() => {
     el.shelfToggle  = document.getElementById('shelf-toggle');
     el.logLatest    = document.getElementById('log-latest');
     el.toastLayer   = document.getElementById('toast-layer');
+    el.whDisplay    = document.getElementById('wh-display');
+    el.whCount      = document.getElementById('wh-count');
   }
 
   // ── Character faces per mood ──────────────────────────────
@@ -107,6 +109,15 @@ const UI = (() => {
     el.gameTime.textContent = `${State.dayName().slice(0,3)}  ${State.timeString()}`;
     el.weekDisplay.textContent = `wk ${State.week}`;
 
+    // Work hours — visible from week 1 onward
+    if (State.workHoursLifetime > 0) {
+      _show(el.whDisplay);
+      el.whCount.textContent = State.workHours.toFixed(1);
+    } else {
+      _hide(el.whDisplay);
+    }
+
+    // Overtime — visible once training complete and OT earned
     if (State.trainingComplete && State.otLifetime > 0) {
       _show(el.otDisplay);
       el.otCount.textContent = State.ot.toFixed(1);
@@ -153,7 +164,7 @@ const UI = (() => {
       }
     } else if (mood === 'lunch') {
       _quipTimer++;
-      if (_quipTimer >= 20) {
+      if (_quipTimer >= 60) {
         _quipTimer = 0;
         const q = LUNCH_QUIPS[Math.floor(Math.random() * LUNCH_QUIPS.length)];
         el.speechBubble.textContent = q;
@@ -170,9 +181,12 @@ const UI = (() => {
     const mood = Time.mood();
 
     if (!State.trainingComplete) {
-      const pct = Math.round(State.trainingProgress() * 100);
-      el.statusLine.textContent = `week one. ${pct}% through training.`;
-      return;
+        const pct = Math.round(State.trainingProgress() * 100);
+        if (mood === 'lunch')   { el.statusLine.textContent = "lunch break. 13:00 can't come soon enough."; return; }
+        if (mood === 'asleep')  { el.statusLine.textContent = 'sleeping.'; return; }
+        if (mood === 'weekend') { el.statusLine.textContent = 'weekend.'; return; }
+        el.statusLine.textContent = `week one. ${pct}% through training.`;
+        return;
     }
 
     if (State.activeEvent) {
@@ -287,10 +301,11 @@ const UI = (() => {
   // ── Upgrade shelf ─────────────────────────────────────────
 
   function _updateUpgradeShelf() {
-    if (!State.trainingComplete) {
-      _hide(el.upgradeShelf);
-      return;
-    }
+    const pastMonday = State.week > 1 || State.dayIndex > 0;
+      if (!pastMonday) {
+          _hide(el.upgradeShelf);
+          return;
+      }
     _show(el.upgradeShelf);
 
     const allUpgrades = Upgrades.all();
