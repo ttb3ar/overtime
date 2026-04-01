@@ -180,14 +180,14 @@ const UI = (() => {
   function _updateStatus() {
     const mood = Time.mood();
 
-    if (!State.trainingComplete) {
+    /*if (!State.trainingComplete) {
         const pct = Math.round(State.trainingProgress() * 100);
         if (mood === 'lunch')   { el.statusLine.textContent = "lunch break. 13:00 can't come soon enough."; return; }
         if (mood === 'asleep')  { el.statusLine.textContent = 'sleeping.'; return; }
         if (mood === 'weekend') { el.statusLine.textContent = 'weekend.'; return; }
-        el.statusLine.textContent = `week one. ${pct}% through training.`;
+        //el.statusLine.textContent = `week one. ${pct}% through training.`;
         return;
-    }
+    }*/
 
     if (State.activeEvent) {
       el.statusLine.textContent = '';
@@ -214,11 +214,12 @@ const UI = (() => {
   function _updateProgress() {
     const mood = Time.mood();
 
+    /*
     if (!State.trainingComplete) {
       _show(el.progressWrap);
       _setProgress(State.trainingProgress());
       return;
-    }
+    }*/
 
     if (mood === 'working') {
       _show(el.progressWrap);
@@ -246,10 +247,11 @@ const UI = (() => {
 
   function _updateButton() {
     const btn = el.btnPrimary;
-
-    if (!State.trainingComplete || State.activeEvent) {
-      _hide(btn);
-      return;
+ 
+    const shelfUnlocked = State.week > 1 || State.dayIndex >= 1;
+    if (!shelfUnlocked) {
+        _hide(el.upgradeShelf);
+        return;
     }
 
     const inOTWindow = Time.isOTWindow();
@@ -301,12 +303,15 @@ const UI = (() => {
   // ── Upgrade shelf ─────────────────────────────────────────
 
   function _updateUpgradeShelf() {
-    const pastMonday = State.week > 1 || State.dayIndex > 0;
-      if (!pastMonday) {
-          _hide(el.upgradeShelf);
-          return;
-      }
+
+
+    const shelfUnlocked = State.week > 1 || State.dayIndex >= 1;
+    if (!shelfUnlocked) {
+      _hide(el.upgradeShelf);
+      return;
+    }
     _show(el.upgradeShelf);
+    el.upgradeGrid.className = _shelfOpen ? 'open' : '';
 
     const allUpgrades = Upgrades.all();
     if (!allUpgrades.length) return;
@@ -314,37 +319,38 @@ const UI = (() => {
     el.upgradeGrid.innerHTML = '';
     let anyVisible = false;
 
-    allUpgrades.forEach(u => {
-      if (!Upgrades.isUnlocked(u.id)) return;
+    const groups = Upgrades.all();
+    groups.forEach(g => {
+      if (!Upgrades.isUnlocked(g.id)) return;
+      if (Upgrades.isComplete(g.id)) return;
+
+      const tier = Upgrades.nextTier(g.id);
+      if (!tier) return;
       anyVisible = true;
 
-      const bought     = State.bought.has(u.id);
-      const affordable = !bought && State.ot >= u.cost;
+      const cur       = tier.currency;
+      const balance   = cur === 'wh' ? State.workHours : State.ot;
+      const affordable = balance >= tier.cost;
+      const symbol    = cur === 'wh' ? '⧗' : '✦';
 
       const card = document.createElement('div');
-      card.className = 'upgrade-card'
-        + (bought     ? ' bought'     : '')
-        + (affordable ? ' affordable' : '')
-        + (!affordable && !bought ? ' locked' : '');
+      card.className = 'upgrade-card' + (affordable ? ' affordable' : '');
 
       card.innerHTML = `
-        <div class="u-name">${u.name}</div>
-        <div class="u-cost ${bought ? 'bought-label' : ''}">${bought ? '✓ purchased' : u.cost.toFixed(1) + 'h'}</div>
-        <div class="u-desc">${u.desc}</div>
+        <div class="u-name">${tier.name}</div>
+        <div class="u-cost">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
+        <div class="u-desc">${tier.desc}</div>
       `;
 
-      if (!bought) {
-        card.addEventListener('click', () => {
-          if (State.spendOT(u.cost)) {
-            Upgrades.apply(u.id);
-            UI.log(`purchased: ${u.name}`, 'upgrade');
-            UI.showToast(`${u.name} unlocked.`, 'good');
-            _renderUpgradeGrid();
-          } else {
-            UI.showToast('not enough overtime.', 'warn');
-          }
-        });
-      }
+      card.addEventListener('click', () => {
+        if (Upgrades.buy(g.id)) {
+          UI.log(`${tier.name}: done.`, 'upgrade');
+          UI.showToast(`${tier.name} unlocked.`, 'good');
+          _renderUpgradeGrid();
+        } else {
+          UI.showToast('not enough hours.', 'warn');
+        }
+      });
 
       el.upgradeGrid.appendChild(card);
     });

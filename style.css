@@ -340,12 +340,6 @@ html, body {
   transform: none;
 }
 
-.upgrade-card.locked {
-  opacity: 0.25;
-  cursor: default;
-  transform: none;
-}
-
 .u-name {
   font-weight: 500;
   font-size: 13px;

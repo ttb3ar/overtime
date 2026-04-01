@@ -12,6 +12,9 @@ const State = {
 
   // ── Progression ──────────────────────────────────────────
   trainingComplete: false,
+  tiers: {},          // groupId → tier index purchased
+  lunchReduction: 0,  // minutes removed from lunch window
+  clickMinutes: 1,
 
   // ── Overtime ──────────────────────────────────────────────
   ot:         0,      // spendable overtime hours
@@ -74,7 +77,8 @@ const State = {
     return `${h}:${m}`;
   },
 
-  /** Training progress 0–1 */
+  /** Training progress 0–1
+   * Training is now completed via an upgrade
   trainingProgress() {
     if (this.trainingComplete) return 1;
     // training completes after 1 full week (week 2 starts)
@@ -84,7 +88,7 @@ const State = {
                   + (this.hour * 60)
                   + this.minute;
     return Math.min(elapsed / totalMinsInWeek, 1);
-  },
+  }, */
 
   /** Advance time by one tick's worth of game-minutes */
   tick() {
@@ -127,6 +131,12 @@ const State = {
     return true;
   },
 
+  spendWorkHours(amount) {
+    if (this.workHours < amount) return false;
+    this.workHours -= amount;
+    return true;
+  },
+
   /** Snapshot for saving (plain object, no functions) */
   serialize() {
     return {
@@ -137,13 +147,16 @@ const State = {
       trainingComplete: this.trainingComplete,
       ot:               this.ot,
       otLifetime:       this.otLifetime,
-      bought:           [...this.bought],
+      //bought:           [...this.bought],
       flags:            { ...this.flags },
       autoMultiplier:   this.autoMultiplier,
       clickMultiplier:  this.clickMultiplier,
       eventCooldown:    this.eventCooldown,
       workHours:        this.workHours,
       workHoursLifetime:this.workHoursLifetime,
+      tiers:         { ...this.tiers },
+      lunchReduction: this.lunchReduction,
+      clickMinutes:  this.clickMinutes,
     };
   },
 
@@ -156,13 +169,16 @@ const State = {
     this.trainingComplete = data.trainingComplete ?? false;
     this.ot               = data.ot               ?? 0;
     this.otLifetime       = data.otLifetime       ?? 0;
-    this.bought           = new Set(data.bought   ?? []);
+    //this.bought           = new Set(data.bought   ?? []);
     this.flags            = { ...this.flags, ...(data.flags ?? {}) };
     this.autoMultiplier   = data.autoMultiplier   ?? 1;
     this.clickMultiplier  = data.clickMultiplier  ?? 1;
     this.eventCooldown    = data.eventCooldown    ?? 0;
     this.workHours         = data.workHours       ?? 0;
     this.workHoursLifetime = data.workHoursLifetime ?? 0;
+    this.tiers         = data.tiers         ?? {};
+    this.lunchReduction = data.lunchReduction ?? 0;
+    this.clickMinutes  = data.clickMinutes   ?? 1;
     // re-derive modifiers from bought upgrades
     this.modifiers = [];
   },

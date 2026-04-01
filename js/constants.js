@@ -14,7 +14,7 @@ const C = {
   WORKDAYS:       [0,1,2,3,4],   // indices into DAYS
   WEEKEND:        [5,6],
 
-  TRAINING_WEEKS: 1,      // how many weeks before OT unlocks
+  //TRAINING_WEEKS: 1,      // how many weeks before OT unlocks
 
   // ── Overtime accrual ─────────────────────────────────────
   AUTO_OT_BASE:   1,   // hours per tick from auto-overtime (base)

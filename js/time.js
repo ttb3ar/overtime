@@ -39,7 +39,8 @@ const Time = (() => {
     if (State.flags.outsourceSleep) return false;
     if (_isWeekend() && !State.flags.sacrificeWeekend) return false;
     const h = State.hour;
-    return h >= C.LUNCH_START && h < C.LUNCH_END;
+    const effectiveEnd = C.LUNCH_START + (60 - (State.lunchReduction ?? 0)) / 60;
+    return h >= C.LUNCH_START && h < effectiveEnd;
   }
 
   function _isOTWindow() {
@@ -132,9 +133,6 @@ const Time = (() => {
     if (State.dayIndex >= 7) {
       State.dayIndex = 0;
       State.week++;
-    }
-    if (!State.trainingComplete && State.week > C.TRAINING_WEEKS) {
-      State.trainingComplete = true;
     }
     if (State.eventCooldown > 0) State.eventCooldown--;
 
@@ -247,14 +245,7 @@ const Time = (() => {
       State.dayIndex = 0;
       State.week++;
       }
-      if (!State.trainingComplete && State.week > C.TRAINING_WEEKS) {
-      State.trainingComplete = true;
-      }
       if (State.eventCooldown > 0) State.eventCooldown--;
-      if (_isWorkHours()) {
-        const mins = Math.min(State.clickMinutes ?? 1, 60 - State.minute % 60);
-        State.addWorkHours(mins / 60);
-      }
       if (State.dayIndex !== prevDay) _resetDailyOT();
 
       _mood = _deriveMood();
