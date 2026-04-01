@@ -247,13 +247,6 @@ const UI = (() => {
 
   function _updateButton() {
     const btn = el.btnPrimary;
- 
-    const shelfUnlocked = State.week > 1 || State.dayIndex >= 1;
-    if (!shelfUnlocked) {
-        _hide(el.upgradeShelf);
-        return;
-    }
-
     const inOTWindow = Time.isOTWindow();
     const otActive   = Time.otActive();
     const autoOT     = State.flags.autoOT;
@@ -301,65 +294,63 @@ const UI = (() => {
   }
 
   // ── Upgrade shelf ─────────────────────────────────────────
-
   function _updateUpgradeShelf() {
-
-
     const shelfUnlocked = State.week > 1 || State.dayIndex >= 1;
     if (!shelfUnlocked) {
       _hide(el.upgradeShelf);
       return;
     }
     _show(el.upgradeShelf);
-    el.upgradeGrid.className = _shelfOpen ? 'open' : '';
 
-    const allUpgrades = Upgrades.all();
-    if (!allUpgrades.length) return;
+    const groups = Upgrades.all();
+    if (!groups.length) return;
+
+    let visibleCount = 0;
+    groups.forEach(g => {
+      if (!Upgrades.isUnlocked(g.id)) return;
+      if (!Upgrades.isComplete(g.id) && Upgrades.nextTier(g.id)) visibleCount++;
+    });
+
+    // reapply both classes cleanly every time
+    el.upgradeGrid.classList.toggle('open',   _shelfOpen);
+    el.upgradeGrid.classList.toggle('single', visibleCount === 1);
 
     el.upgradeGrid.innerHTML = '';
     let anyVisible = false;
 
-    const groups = Upgrades.all();
     groups.forEach(g => {
       if (!Upgrades.isUnlocked(g.id)) return;
       if (Upgrades.isComplete(g.id)) return;
-
       const tier = Upgrades.nextTier(g.id);
       if (!tier) return;
       anyVisible = true;
 
-      const cur       = tier.currency;
-      const balance   = cur === 'wh' ? State.workHours : State.ot;
+      const cur      = tier.currency;
+      const balance  = cur === 'wh' ? State.workHours : State.ot;
       const affordable = balance >= tier.cost;
-      const symbol    = cur === 'wh' ? '⧗' : '✦';
+      const symbol   = cur === 'wh' ? '⧗' : '✦';
 
       const card = document.createElement('div');
       card.className = 'upgrade-card' + (affordable ? ' affordable' : '');
-
       card.innerHTML = `
         <div class="u-name">${tier.name}</div>
         <div class="u-cost">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
         <div class="u-desc">${tier.desc}</div>
       `;
-
       card.addEventListener('click', () => {
         if (Upgrades.buy(g.id)) {
           UI.log(`${tier.name}: done.`, 'upgrade');
-          UI.showToast(`${tier.name} unlocked.`, 'good');
           _renderUpgradeGrid();
         } else {
-          UI.showToast('not enough hours.', 'warn');
+          UI.log('not enough hours.', 'warn');
         }
       });
-
       el.upgradeGrid.appendChild(card);
     });
 
     el.shelfToggle.textContent = anyVisible
       ? `upgrades  ${_shelfOpen ? '↑' : '↓'}`
       : 'upgrades  —';
-
-    el.upgradeGrid.className = _shelfOpen ? 'open' : '';
   }
 
   function _renderUpgradeGrid() {
@@ -375,7 +366,7 @@ const UI = (() => {
 
       el.shelfToggle.addEventListener('click', () => {
         _shelfOpen = !_shelfOpen;
-        el.upgradeGrid.className = _shelfOpen ? 'open' : '';
+        el.upgradeGrid.classList.toggle('open', _shelfOpen);
         el.shelfToggle.textContent = `upgrades  ${_shelfOpen ? '↑' : '↓'}`;
       });
     },
@@ -411,13 +402,14 @@ const UI = (() => {
       }
     },
 
+    /*only bread:
     showToast(text, type = '') {
       const t = document.createElement('div');
       t.className = `toast${type ? ' ' + type : ''}`;
       t.textContent = text;
       el.toastLayer.appendChild(t);
       setTimeout(() => t.remove(), 3000);
-    },
+    },*/
 
     showClickQuip() {
         const q = CLICK_QUIPS[Math.floor(Math.random() * CLICK_QUIPS.length)];

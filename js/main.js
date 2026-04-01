@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const activated = Time.activateOT();
     if (activated) {
-      UI.showToast('overtime started. good luck.', 'good');
+      UI.log('overtime started. good luck.', 'good');
       UI.bounceCharacter();
     }
   });
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 5. Save buttons
   document.getElementById('btn-save').addEventListener('click', () => {
     Save.save();
-    UI.showToast('saved.', 'good');
+    UI.log('saved.', 'good');
   });
 
   document.getElementById('btn-export').addEventListener('click', () => {
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-reset').addEventListener('click', () => {
     if (!confirm('reset everything and start over?')) return;
     Save.reset();
-    UI.showToast('see you monday.', '');
+    UI.log('see you monday.', '');
     UI.update();
   });
 

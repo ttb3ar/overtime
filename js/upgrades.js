@@ -19,9 +19,9 @@ const Upgrades = (() => {
       unlock: () => true,   // always visible from shelf unlock
       tiers: [
         {
-          name:     'get promoted',
-          desc:     'you\'re an intern. put in a good word for yourself.',
-          cost:     10,
+          name:     'promote to employee',
+          desc:     'put in a good word for yourself. unlocks overtime',
+          cost:     35,
           currency: 'wh',
           apply() {
             State.trainingComplete = true;

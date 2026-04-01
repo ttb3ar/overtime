@@ -294,13 +294,19 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  padding: 0 24px 16px;
+  padding: 16px 24px 0;
   width: 100%;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
   transition: max-height 0.35s ease, opacity 0.25s ease;
   user-select: none;
+}
+
+#upgrade-grid.single {
+  grid-template-columns: 1fr;
+  max-width: 240px;
+  margin: 0 auto;
 }
 
 #upgrade-grid.open {
@@ -322,7 +328,7 @@ html, body {
 
 .upgrade-card:hover {
   border-color: var(--faint);
-  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .upgrade-card.affordable {
@@ -410,7 +416,7 @@ html, body {
 
 .ghost-btn:hover { color: var(--fg); }
 
-/* ── Toast ──────────────────────────────────────────────────── */
+/* ── Toast ────────────────────────────────────────────────────
 #toast-layer {
   position: fixed;
   bottom: 48px;
@@ -422,7 +428,7 @@ html, body {
   align-items: center;
   pointer-events: none;
   z-index: 9999;
-}
+}*/
 
 .toast {
   font-family: var(--mono);

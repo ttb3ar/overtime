@@ -46,6 +46,7 @@ const Save = (() => {
         UI.update();
         Save.maybeAutosave();
       });
+      UI,update();
     },
 
     exportSave() {
@@ -55,7 +56,7 @@ const Save = (() => {
         // copy to clipboard if available, else prompt
         if (navigator.clipboard) {
           navigator.clipboard.writeText(b64).then(() => {
-            UI.showToast('save code copied to clipboard.', 'good');
+            UI && UI.log && UI.log('save code copied to clipboard.', 'good');
           });
         } else {
           prompt('copy your save code:', b64);
@@ -73,10 +74,10 @@ const Save = (() => {
         State.deserialize(data);
         Upgrades.reapply();
         this.save();
-        UI.showToast('save imported.', 'good');
+        UI.log('save imported.', 'good');
         UI.update();
       } catch(e) {
-        UI.showToast('invalid save code.', 'warn');
+        UI.log('invalid save code.', 'warn');
         console.warn('import failed:', e);
       }
     },
