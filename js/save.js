@@ -20,14 +20,15 @@ const Save = (() => {
     load() {
       try {
         const raw = localStorage.getItem(C.SAVE_KEY);
-        if (!raw) return;
+        if (!raw) return false;
         const data = JSON.parse(raw);
         State.deserialize(data);
         Upgrades.reapply();
-        UI && UI.log && UI.log('save loaded.', '');
+        UI.showToast('save loaded.', '');
       } catch(e) {
         console.warn('load failed, starting fresh:', e);
         localStorage.removeItem(C.SAVE_KEY);
+        return false;
       }
     },
 
@@ -51,7 +52,7 @@ const Save = (() => {
     exportSave() {
       try {
         const data  = JSON.stringify(State.serialize());
-        const b64   = btoa(unescape(encodeURIComponent(data)));
+        const b64   = btoa(encodeURIComponent(data));
         // copy to clipboard if available, else prompt
         if (navigator.clipboard) {
           navigator.clipboard.writeText(b64).then(() => {
@@ -69,15 +70,15 @@ const Save = (() => {
       const input = prompt('paste your save code:');
       if (!input) return;
       try {
-        const data = JSON.parse(decodeURIComponent(escape(atob(input.trim()))));
+        const data = JSON.parse(decodeURIComponent(atob(input.trim())));
         State.deserialize(data);
         Upgrades.reapply();
         this.save();
-        UI.showToast('save imported.', 'good');
         UI.update();
+        UI.showToast('save imported.', 'good');
       } catch(e) {
-        UI.showToast('invalid save code.', 'warn');
         console.warn('import failed:', e);
+        UI.showToast('invalid save code.', 'warn');
       }
     },
 
