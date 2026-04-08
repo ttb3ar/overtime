@@ -3,10 +3,13 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // 1. Load save (or start fresh)
-  Save.load();
+  const hasSave = Save.load();
 
   // 2. Init UI (caches elements, wires shelf toggle)
   UI.init();
+
+  // 2a. Confirm load after UI is ready
+  if (hasSave) UI.showToast('save loaded.', '');
 
   // 3. Start the clock — UI.update runs every tick
   Time.start(() => {

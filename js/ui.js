@@ -89,7 +89,7 @@ const UI = (() => {
   let _lastMood   = null;
   let _quipTimer  = 0;
   let _shelfOpen  = false;
-  let _logEntries = [];
+  let _lastRank   = null;
 
   // ── Helpers ───────────────────────────────────────────────
 
@@ -344,7 +344,6 @@ const UI = (() => {
 
       card.addEventListener('click', () => {
         if (Upgrades.buy(g.id)) {
-          UI.log(`${tier.name}: done.`, 'upgrade');
           UI.showToast(`${tier.name} unlocked.`, 'good');
           _renderUpgradeGrid();
         } else {
@@ -368,7 +367,13 @@ const UI = (() => {
 
   function _updateRank() {
     if (!el.rankDisplay) return;
-    el.rankDisplay.textContent = Upgrades.rankLabel();
+    const label = Upgrades.rankLabel();
+    if (label === _lastRank) return;
+    _lastRank = label;
+    el.rankDisplay.textContent = label;
+    el.rankDisplay.classList.remove('rank-updated');
+    void el.rankDisplay.offsetWidth;
+    el.rankDisplay.classList.add('rank-updated');
   }
 
   // ── Public API ────────────────────────────────────────────

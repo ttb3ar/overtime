@@ -16,12 +16,14 @@ const Upgrades = (() => {
 
     {
       id: 'promote',
+      baseRank: 'intern',
       unlock: () => true,   // always visible from shelf unlock
       tiers: [
         {
           name:     'get promoted',
-          desc:     'you\'re an intern. put in a good word for yourself.',
-          cost:     10,
+          rank:     'employee',
+          desc:     'you\'re an intern. put in a good word for yourself. unlocks OVERTIME',
+          cost:     36,
           currency: 'wh',
           apply() {
             State.trainingComplete = true;
@@ -30,9 +32,10 @@ const Upgrades = (() => {
         },
         {
           name:     'recognition',
-          desc:     'employee of the month. still no raise.',
-          cost:     5,
-          currency: 'ot',
+          rank:     'recognized employee',
+          desc:     'employee of the month. still no raise. at least your time is worth more?',
+          cost:     70,
+          currency: 'wh',
           apply() {
             State.clickMinutes = 2;
           },
@@ -49,17 +52,17 @@ const Upgrades = (() => {
         {
           name:     'shorten lunch',
           desc:     'ask for a shorter lunch break. they say yes.',
-          cost:     8,
+          cost:     14,
           currency: 'wh',
           apply() {
-            State.lunchReduction = (State.lunchReduction ?? 0) + 10;
+            State.lunchReduction = (State.lunchReduction ?? 0) + 20;
           },
           cardName: 'shorten lunch i',
         },
         {
           name:     'shorten lunch',
           desc:     'push it further. you eat at your desk.',
-          cost:     14,
+          cost:     20.2,
           currency: 'wh',
           apply() {
             State.lunchReduction = (State.lunchReduction ?? 0) + 10;
@@ -69,7 +72,7 @@ const Upgrades = (() => {
         {
           name:     'skip lunch',
           desc:     'lunch is a social construct.',
-          cost:     22,
+          cost:     35,
           currency: 'wh',
           apply() {
             State.flags.skipLunch = true;
@@ -89,56 +92,56 @@ const Upgrades = (() => {
       tiers: [
         {
           name:     'coffee machine',
-          desc:     '+1h overtime. the machine appears overnight.',
-          cost:     3,
-          currency: 'ot',
+          desc:     'the machine appears overnight. +1h overtime.',
+          cost:     100,
+          currency: 'wh',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
           cardName: 'coffee machine',
         },
         {
-          name:     'better coffee',
-          desc:     '+1h overtime. someone replaced the beans.',
-          cost:     6,
-          currency: 'ot',
+          name:     'cappuccino',
+          desc:     'no more instant coffee. +1h overtime.',
+          cost:     180,
+          currency: 'wh',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
-          cardName: 'better coffee',
+          cardName: 'cappuccino',
         },
         {
-          name:     'less milk',
-          desc:     '+1h overtime. you\'re getting serious.',
-          cost:     10,
+          name:     'latte',
+          desc:     'you\'re getting serious. +1h overtime.',
+          cost:     215,
           currency: 'ot',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
-          cardName: 'less milk',
+          cardName: 'latte',
         },
         {
           name:     'americano',
-          desc:     '+1h overtime. no milk. no mercy.',
-          cost:     16,
+          desc:     'no milk. no mercy. +1h overtime.',
+          cost:     245,
           currency: 'ot',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
           cardName: 'americano',
         },
         {
           name:     'drip',
-          desc:     '+1h overtime. you\'ve stopped tasting it.',
-          cost:     24,
+          desc:     'you\'ve stopped tasting it. +1h overtime.',
+          cost:     270,
           currency: 'ot',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
           cardName: 'drip',
         },
         {
           name:     'espresso shots',
-          desc:     '+1h overtime. plural.',
-          cost:     35,
+          desc:     'plural. +1h overtime.',
+          cost:     321,
           currency: 'ot',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
           cardName: 'espresso shots',
         },
         {
           name:     '???',
-          desc:     'you don\'t know what\'s in it anymore.',
-          cost:     50,
+          desc:     '+1h overtime.',
+          cost:     372,
           currency: 'ot',
           apply() {
             State.autoMultiplier *= 1.5;
@@ -147,8 +150,8 @@ const Upgrades = (() => {
         },
         {
           name:     'outsource sleep',
-          desc:     'all hours count as working. you\'ve given up.',
-          cost:     80,
+          desc:     'you\'re happier this way. for the company.',
+          cost:     424,
           currency: 'ot',
           apply() {
             State.flags.outsourceSleep = true;
@@ -253,9 +256,10 @@ const Upgrades = (() => {
       Time.setOTCap(otCapBase + otCapExtra);
     },
     rankLabel() {
+      const g   = GROUPS.find(grp => grp.id === 'promote');
       const idx = State.tiers?.promote ?? 0;
-      const labels = ['intern', 'employee', 'recognized employee'];
-      return labels[idx] ?? labels[labels.length - 1];
+      if (idx === 0) return g.baseRank;
+      return g.tiers[idx - 1]?.rank ?? g.baseRank;
     },
   };
 
