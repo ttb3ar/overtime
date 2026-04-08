@@ -252,6 +252,11 @@ const Upgrades = (() => {
       }
       Time.setOTCap(otCapBase + otCapExtra);
     },
+    rankLabel() {
+      const idx = State.tiers?.promote ?? 0;
+      const labels = ['intern', 'employee', 'recognized employee'];
+      return labels[idx] ?? labels[labels.length - 1];
+    },
   };
 
 })();

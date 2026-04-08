@@ -381,6 +381,12 @@ html, body {
   user-select: none;
 }
 
+#rank-display {
+  font-style: italic;
+  flex: 1;
+  color: var(--mid);
+}
+
 #log-latest {
   font-style: italic;
   flex: 1;
