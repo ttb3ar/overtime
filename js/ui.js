@@ -23,7 +23,7 @@ const UI = (() => {
     el.upgradeShelf = document.getElementById('upgrade-shelf');
     el.upgradeGrid  = document.getElementById('upgrade-grid');
     el.shelfToggle  = document.getElementById('shelf-toggle');
-    el.logLatest    = document.getElementById('log-latest');
+    el.rankDisplay  = document.getElementById('rank-display');
     el.toastLayer   = document.getElementById('toast-layer');
     el.whDisplay    = document.getElementById('wh-display');
     el.whCount      = document.getElementById('wh-count');
@@ -366,6 +366,11 @@ const UI = (() => {
     _updateUpgradeShelf();
   }
 
+  function _updateRank() {
+    if (!el.rankDisplay) return;
+    el.rankDisplay.textContent = Upgrades.rankLabel();
+  }
+
   // ── Public API ────────────────────────────────────────────
 
   return {
@@ -388,27 +393,13 @@ const UI = (() => {
       _updateButton();
       _updateEvent();
       _updateUpgradeShelf();
+      _updateRank();
     },
 
     bounceCharacter() {
       el.character.classList.remove('happy');
       void el.character.offsetWidth;
       el.character.classList.add('happy');
-    },
-
-    log(text, type = '', permanent = false) {
-      _logEntries.unshift({ text, type });
-      if (_logEntries.length > 50) _logEntries.pop();
-      el.logLatest.textContent = text;
-      el.logLatest.className   = type;
-      if (!permanent) {
-        setTimeout(() => {
-          if (el.logLatest.textContent === text) {
-            el.logLatest.textContent = '';
-            el.logLatest.className = '';
-          }
-        }, 6000);
-      }
     },
 
     showToast(text, type = '') {
