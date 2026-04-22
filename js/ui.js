@@ -40,6 +40,7 @@ const UI = (() => {
     unproductive: '(._. )',
     weekend:      '( ˘ω˘)',
     asleep:       '(-.-)zzz',
+    groggy:       '(\'\'\'_‸_)'
   };
 
   const SPEECH = {
@@ -52,6 +53,7 @@ const UI = (() => {
     unproductive: '...i could have stayed.',
     weekend:      null,
     asleep:       null,
+    groggy:       'a "productive" weekend awaits!',
   };
 
   const WORK_QUIPS = [
@@ -204,6 +206,7 @@ const UI = (() => {
       weekend:      'weekend.',
       asleep:       'sleeping.',
       normal:       `${State.dayName()}. work starts at ${C.WORK_START}:00.`,
+      groggy: 'it\'s early. but you\'re here.',
     };
 
     el.statusLine.textContent = map[mood] ?? '';

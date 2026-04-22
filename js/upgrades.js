@@ -46,6 +46,70 @@ const Upgrades = (() => {
     },
 
     {
+      id: 'weekend',
+      unlock: () => (State.tiers?.lunch ?? 0) >= 3,
+      tiers: [
+        {
+          name:     'saturday morning',
+          desc:     '"voluntarily staying productive."',
+          cost:     28,
+          currency: 'wh',
+          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 12); },
+        },
+        {
+          name:     'sunday morning',
+          desc:     '"happy to help out."',
+          cost:     28,
+          currency: 'wh',
+          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 12); },
+        },
+        {
+          name:     'saturday afternoon',
+          desc:     '"at my own discretion."',
+          cost:     40,
+          currency: 'wh',
+          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 15.5); },
+        },
+        {
+          name:     'sunday afternoon',
+          desc:     '"as requested."',
+          cost:     40,
+          currency: 'ot',
+          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 15.5); },
+        },
+        {
+          name:     'saturday evening',
+          desc:     '"per leadership\'s guidance."',
+          cost:     55,
+          currency: 'ot',
+          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 17); },
+        },
+        {
+          name:     'sunday evening',
+          desc:     '"as discussed."',
+          cost:     55,
+          currency: 'ot',
+          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 17); },
+        },
+        {
+          name:     'saturday night',
+          desc:     '"this is fine."',
+          cost:     80,
+          currency: 'ot',
+          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 24); },
+        },
+        {
+          name:     'sunday night',
+          desc:     '"it\'s what\'s best for the company."',
+          cost:     80,
+          currency: 'ot',
+          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 24); },
+        },
+      ],
+    },
+
+
+    {
       id: 'lunch',
       unlock: () => State.trainingComplete,
       tiers: [
@@ -83,12 +147,12 @@ const Upgrades = (() => {
         // tier 3 purchased → card becomes coffee machine (handled by nextGroup)
       ],
       // after all tiers bought, morph into coffee machine group display
-      morphsInto: 'coffee',
+      morphsInto: 'weekend',
     },
 
     {
       id: 'coffee',
-      unlock: () => (State.tiers?.lunch ?? 0) >= 3,   // lunch fully upgraded
+      unlock: () => State.otLifetime > 0,
       tiers: [
         {
           name:     'coffee machine',
@@ -229,10 +293,10 @@ const Upgrades = (() => {
 
     // Re-apply all purchased tiers from scratch (used after loading a save)
     reapply() {
+      State.weekendWork = { satUntil: 0, sunUntil: 0 };
       State.autoMultiplier         = 1;
       State.lunchReduction         = 0;
       State.flags.skipLunch        = false;
-      State.flags.sacrificeWeekend = false;
       State.flags.outsourceSleep   = false;
       State.flags.autoOT           = false;
       State.flags.openDoor         = false;
