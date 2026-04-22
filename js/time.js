@@ -27,7 +27,12 @@ const Time = (() => {
 
   function _isWorkHours() {
     const h = State.hour;
-    if (_isWeekend()) return State.flags.sacrificeWeekend;
+    if (_isWeekend()) {
+      const until = State.dayIndex === 5
+        ? State.weekendWork.satUntil
+        : State.weekendWork.sunUntil;
+      return State.hour >= C.WORK_START && State.hour < until;
+    }
     if (State.flags.outsourceSleep) return true;
     if (h < C.WORK_START || h >= C.WORK_END) return false;
     if (!State.flags.skipLunch && h >= C.LUNCH_START && h < C.LUNCH_END) return false;
@@ -45,7 +50,7 @@ const Time = (() => {
 
   function _isOTWindow() {
     if (!State.trainingComplete) return false;
-    if (_isWeekend() && !State.flags.sacrificeWeekend) return false;
+    if (_isWeekend()) return false;
     if (State.flags.outsourceSleep) return false;
     const h = State.hour;
     return h >= C.WORK_END && h < C.WORK_END + _otMaxHours;
@@ -69,8 +74,17 @@ const Time = (() => {
     const h      = State.hour;
     const isWknd = _isWeekend();
 
-    if (isWknd && !State.flags.sacrificeWeekend) {
-      return h >= 22 || h < 7 ? 'asleep' : 'weekend';
+    if (isWknd) {
+      const until = State.dayIndex === 5
+        ? State.weekendWork.satUntil
+        : State.weekendWork.sunUntil;
+      const hasWeekendWork = until > 0;
+      if (h >= until || h < C.WORK_START) {
+        if (h >= 22 || h < 7) return 'asleep';
+        if (hasWeekendWork && h < C.WORK_START) return 'groggy';
+        return 'weekend';
+      }
+      return 'working';
     }
     if (!isWknd && (h < 7 || h >= 22)) return 'asleep';
 

@@ -38,7 +38,8 @@ const State = {
   // ── Flags (upgrade effects toggle these) ─────────────────
   flags: {
     skipLunch:      false,  // lunch hours count as work
-    sacrificeWeekend: false,// weekends count as work
+    //sacrificeWeekend: false,// weekends count as work
+    weekendWork: { satUntil: 0, sunUntil: 0 },
     outsourceSleep: false,  // all hours count as work
     autoOT:         false,  // passive OT accrual
     openDoor:       false,  // higher event frequency
@@ -54,7 +55,10 @@ const State = {
     const { dayIndex, hour, flags } = this;
     if (flags.outsourceSleep) return true;
     const isWeekend = C.WEEKEND.includes(dayIndex);
-    if (isWeekend) return flags.sacrificeWeekend;
+    if (isWeekend) {
+      const until = dayIndex === 5 ? this.weekendWork.satUntil : this.weekendWork.sunUntil;
+      return hour >= C.WORK_START && hour < until;
+    }
     if (hour >= C.WORK_START && hour < C.WORK_END) {
       // lunch break
       if (!flags.skipLunch && hour >= C.LUNCH_START && hour < C.LUNCH_END) {
@@ -149,6 +153,7 @@ const State = {
       otLifetime:       this.otLifetime,
       //bought:           [...this.bought],
       flags:            { ...this.flags },
+      weekendWork:      { ...this.weekendWork },
       autoMultiplier:   this.autoMultiplier,
       clickMultiplier:  this.clickMultiplier,
       eventCooldown:    this.eventCooldown,
@@ -179,6 +184,7 @@ const State = {
     this.tiers         = data.tiers         ?? {};
     this.lunchReduction = data.lunchReduction ?? 0;
     this.clickMinutes  = data.clickMinutes   ?? 1;
+    this.weekendWork = data.weekendWork ?? { satUntil: 0, sunUntil: 0 };
     // re-derive modifiers from bought upgrades
     this.modifiers = [];
   },
