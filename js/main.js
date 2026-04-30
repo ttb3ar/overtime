@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. Start the clock — UI.update runs every tick
   Time.start(() => {
+    Events.tick();
     UI.update();
     Save.maybeAutosave();
   });

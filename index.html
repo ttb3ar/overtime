@@ -11,6 +11,9 @@
 </head>
 <body>
 
+  <!-- system-error duration bar — fixed top strip -->
+  <div id="sys-err-bar" class="hidden"><div id="sys-err-fill"></div></div>
+
   <div id="app">
 
     <!-- barely-there header -->
@@ -40,11 +43,17 @@
 
       <div id="action-area">
         <button id="btn-primary" class="hidden"></button>
+        <div id="ot-countdown-wrap" class="hidden">
+          <div id="ot-countdown-fill"></div>
+        </div>
       </div>
 
       <div id="event-card" class="hidden">
         <p id="event-text"></p>
         <div id="event-choices"></div>
+        <div id="event-countdown-wrap">
+          <div id="event-countdown-fill"></div>
+        </div>
       </div>
 
     </main>

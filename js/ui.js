@@ -25,8 +25,13 @@ const UI = (() => {
     el.shelfToggle  = document.getElementById('shelf-toggle');
     el.rankDisplay  = document.getElementById('rank-display');
     el.toastLayer   = document.getElementById('toast-layer');
-    el.whDisplay    = document.getElementById('wh-display');
-    el.whCount      = document.getElementById('wh-count');
+    el.whDisplay        = document.getElementById('wh-display');
+    el.whCount          = document.getElementById('wh-count');
+    el.sysErrBar        = document.getElementById('sys-err-bar');
+    el.sysErrFill       = document.getElementById('sys-err-fill');
+    el.eventCountdown   = document.getElementById('event-countdown-fill');
+    el.otCountdownWrap  = document.getElementById('ot-countdown-wrap');
+    el.otCountdown      = document.getElementById('ot-countdown-fill');
   }
 
   // ── Character faces per mood ──────────────────────────────
@@ -88,15 +93,24 @@ const UI = (() => {
   ];
 
   // ── Internal state ────────────────────────────────────────
-  let _lastMood   = null;
-  let _quipTimer  = 0;
-  let _shelfOpen  = false;
-  let _lastRank   = null;
+  let _lastMood      = null;
+  let _quipTimer     = 0;
+  let _shelfOpen     = false;
+  let _lastRank      = null;
+  let _lastOTWaiting = false;
+  let _lastEventId   = null;
 
   // ── Helpers ───────────────────────────────────────────────
 
   function _show(e)  { e.classList.remove('hidden'); }
   function _hide(e)  { e.classList.add('hidden'); }
+
+  // Restart a CSS animation by clearing and re-applying it
+  function _restartAnim(elem, anim) {
+    elem.style.animation = 'none';
+    void elem.offsetWidth;
+    elem.style.animation = anim;
+  }
 
   function _setProgress(pct, color) {
     const p = Math.round(pct * 100);
@@ -133,7 +147,19 @@ const UI = (() => {
   function _updateCharacter() {
     const mood = Time.mood();
 
-    el.character.textContent = FACES[mood] ?? FACES.normal;
+    let face = FACES[mood] ?? FACES.normal;
+    if (State.activeEvent?.face) {
+      face = State.activeEvent.face;
+    } else if (Time.isWorkHours() || Time.otActive()) {
+      const mods = State.eventMods ?? {};
+      if (mods.doubleWH)        face = '(ง˘ᵕ˘)ง';
+      if (mods.workCallActive)  face = '(^‿^)';
+      if (mods.clockPaused)     face = '(¬‿¬)';
+      if (mods.noEarnings)      face = '( ˘_˘)';
+      if (mods.systemBonus)     face = '( ˘ᵕ˘)✦';
+      if (mods.systemPenalty)   face = '(;-;)';
+    }
+    el.character.textContent = face;
 
     if (mood !== _lastMood) {
       el.character.className = '';
@@ -195,6 +221,9 @@ const UI = (() => {
       el.statusLine.textContent = '';
       return;
     }
+
+    const modLabel = Events.activeModLabel();
+    if (modLabel) { el.statusLine.textContent = modLabel; return; }
 
     const map = {
       working:      `${State.dayName()}. keep it up.`,
@@ -271,10 +300,18 @@ const UI = (() => {
       btn.classList.add('ot-available');
       btn.disabled = false;
       _show(btn);
+      // Restart countdown bar only when the OT prompt first appears
+      if (!_lastOTWaiting) {
+        _restartAnim(el.otCountdown, 'countdown-shrink 3s linear forwards');
+      }
+      _show(el.otCountdownWrap);
+      _lastOTWaiting = true;
       return;
     }
 
     _hide(btn);
+    _hide(el.otCountdownWrap);
+    _lastOTWaiting = false;
     btn.classList.remove('ot-available');
   }
 
@@ -300,6 +337,8 @@ const UI = (() => {
         btn.addEventListener('click', () => Events.resolve(i));
         el.eventChoices.appendChild(btn);
       });
+      // Restart 3-second countdown bar for this new event
+      _restartAnim(el.eventCountdown, 'countdown-shrink 3s linear forwards');
     }
   }
 
@@ -368,6 +407,19 @@ const UI = (() => {
     _updateUpgradeShelf();
   }
 
+  // ── System-error duration bar ─────────────────────────────
+
+  function _updateModBar() {
+    const info = Events.modBarInfo();
+    if (!info) {
+      _hide(el.sysErrBar);
+      return;
+    }
+    _show(el.sysErrBar);
+    el.sysErrFill.style.width = `${info.fraction * 100}%`;
+    el.sysErrFill.className   = info.isGood ? 'bonus' : 'penalty';
+  }
+
   function _updateRank() {
     if (!el.rankDisplay) return;
     const label = Upgrades.rankLabel();
@@ -402,6 +454,7 @@ const UI = (() => {
       _updateEvent();
       _updateUpgradeShelf();
       _updateRank();
+      _updateModBar();
     },
 
     bounceCharacter() {
@@ -428,6 +481,108 @@ const UI = (() => {
         el.character.classList.remove('happy');
         void el.character.offsetWidth; // force reflow
         el.character.classList.add('happy');
+    },
+
+    showConfetti() {
+      const rect = el.character.getBoundingClientRect();
+      const cx = rect.left + rect.width  / 2;
+      const cy = rect.top  + rect.height / 2;
+      const COLORS = ['#4caf78', '#6b8cff', '#1a1a1a', '#f5c518', '#ffb3c6'];
+      for (let i = 0; i < 24; i++) {
+        const bit = document.createElement('div');
+        bit.className = 'confetti-bit';
+        const angle = Math.random() * Math.PI * 2;
+        const dist  = 50 + Math.random() * 130;
+        const tx    = Math.cos(angle) * dist;
+        const ty    = Math.sin(angle) * dist - 50;
+        const size  = 5 + Math.random() * 7;
+        const dur   = 0.65 + Math.random() * 0.55;
+        const rot   = (Math.random() - 0.5) * 900;
+        Object.assign(bit.style, {
+          left:         `${cx}px`,
+          top:          `${cy}px`,
+          width:        `${size}px`,
+          height:       `${size}px`,
+          background:   COLORS[Math.floor(Math.random() * COLORS.length)],
+          borderRadius: Math.random() > 0.45 ? '50%' : '2px',
+        });
+        document.body.appendChild(bit);
+        bit.animate([
+          { opacity: 1, transform: 'translate(0,0) rotate(0deg)' },
+          { opacity: 0, transform: `translate(${tx}px,${ty}px) rotate(${rot}deg)` },
+        ], { duration: dur * 1000, easing: 'ease-out', fill: 'forwards' });
+        setTimeout(() => bit.remove(), (dur + 0.15) * 1000);
+      }
+    },
+
+    showTears() {
+      const rect = el.character.getBoundingClientRect();
+      const cx = rect.left + rect.width  / 2;
+      const cy = rect.top  + rect.height / 2;
+      for (let i = 0; i < 8; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'tear-drop';
+        const xOff  = (Math.random() - 0.5) * 34;
+        const dur   = 1.0 + Math.random() * 0.9;
+        const delay = Math.random() * 0.7;
+        const ty    = 55 + Math.random() * 65;
+        Object.assign(drop.style, {
+          left: `${cx + xOff}px`,
+          top:  `${cy + 4}px`,
+        });
+        document.body.appendChild(drop);
+        drop.animate([
+          { opacity: 0.8, transform: 'translateY(0) scaleX(1)' },
+          { opacity: 0,   transform: `translateY(${ty}px) scaleX(0.7)` },
+        ], { duration: dur * 1000, delay: delay * 1000, easing: 'ease-in', fill: 'both' });
+        setTimeout(() => drop.remove(), (dur + delay + 0.15) * 1000);
+      }
+    },
+
+    showSpinWheel(isBonus, callback) {
+      const overlay = document.createElement('div');
+      overlay.className = 'spin-overlay';
+      overlay.innerHTML = `
+        <div class="spin-card">
+          <div class="spin-card-title">rebooting...</div>
+          <div class="spin-wheel-wrap">
+            <div class="spin-pointer">▼</div>
+            <div class="spin-wheel"></div>
+          </div>
+          <div class="spin-result"></div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      const wheel  = overlay.querySelector('.spin-wheel');
+      const result = overlay.querySelector('.spin-result');
+
+      // green at pointer (top) when wheel is rotated ~270°; red at ~90°
+      const spins = 6 * 360;
+      const land  = isBonus
+        ? spins + 270 + (Math.random() * 60 - 30)   // green under pointer
+        : spins + 90  + (Math.random() * 60 - 30);  // red under pointer
+
+      // Double rAF: first frame establishes rotate(0deg) as the "from" state,
+      // second frame sets the target so the CSS transition actually fires.
+      requestAnimationFrame(() => {
+        wheel.style.transform = 'rotate(0deg)';
+        requestAnimationFrame(() => {
+          wheel.style.transition = 'transform 2.6s cubic-bezier(0.1, 0.85, 0.3, 1)';
+          wheel.style.transform  = `rotate(${land}deg)`;
+        });
+      });
+
+      // reveal result label after wheel settles
+      setTimeout(() => {
+        result.textContent = isBonus ? 'good luck.' : 'not today.';
+        result.className   = `spin-result ${isBonus ? 'good' : 'bad'}`;
+      }, 2750);
+
+      // close and fire callback
+      setTimeout(() => {
+        overlay.classList.add('closing');
+        setTimeout(() => { overlay.remove(); callback(); }, 500);
+      }, 3300);
     },
   };
 

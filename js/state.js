@@ -35,6 +35,16 @@ const State = {
   activeEvent:  null,   // current event object or null
   eventCooldown: 0,     // ticks until next event can trigger
 
+  // ── Event modifiers (set/cleared by events.js) ───────────
+  eventMods: {
+    doubleWH:      false,   // multitask: 2× work-hour accrual
+    noEarnings:    false,   // pizza party: no WH or OT accrual
+    clockPaused:   false,   // broken clock: time frozen, earning continues
+    systemBonus:   false,   // system error (good): WH→OT, OT×2
+    systemPenalty: false,   // system error (bad): all earning ×0.5
+    workCallActive: false,  // work call: non-work hours count as work
+  },
+
   // ── Flags (upgrade effects toggle these) ─────────────────
   flags: {
     skipLunch:      false,  // lunch hours count as work
@@ -175,6 +185,8 @@ const State = {
     this.autoMultiplier   = data.autoMultiplier   ?? 1;
     this.clickMultiplier  = data.clickMultiplier  ?? 1;
     this.eventCooldown    = data.eventCooldown    ?? 0;
+    this.eventMods = { doubleWH: false, noEarnings: false, clockPaused: false,
+                       systemBonus: false, systemPenalty: false, workCallActive: false };
     this.workHours         = data.workHours       ?? 0;
     this.workHoursLifetime = data.workHoursLifetime ?? 0;
     this.tiers         = data.tiers         ?? {};

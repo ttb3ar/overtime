@@ -17,6 +17,11 @@ const Time = (() => {
   // ── Character mood ────────────────────────────────────────
   let _mood = 'normal';
 
+  // ── Tick size + OT-wait timer ─────────────────────────────
+  let _lastMins      = C.MINS_PER_TICK;  // game-minutes for the most recent tick
+  let _wasOTWaiting  = false;
+  let _otWaitTimer   = null;
+
   // ──────────────────────────────────────────────────────────
   // Internal helpers
   // ──────────────────────────────────────────────────────────
@@ -26,6 +31,7 @@ const Time = (() => {
   }
 
   function _isWorkHours() {
+    if (State.eventMods?.workCallActive) return true;
     const h = State.hour;
     if (_isWeekend()) {
       const until = State.dayIndex === 5
@@ -111,61 +117,91 @@ const Time = (() => {
   // Per-tick logic
   // ──────────────────────────────────────────────────────────
 
+  function _isOTWaiting() {
+    return _isOTWindow() && !_otActive && !_otCompletedToday && !_otSkippedToday;
+  }
+
   function _processTick() {
     const prevDay = State.dayIndex;
+    const mods    = State.eventMods ?? {};
 
-    // Slow periods: 1 game-min per tick, but 10x faster ticks (100ms).
-    // Normal: MINS_PER_TICK (60) game-mins per tick at 1000ms.
-    // Net game-time rate is identical; the clock just reads smoothly.
-    const slowTick = _isLunch() || (_otActive && _isOTWindow());
-    const mins     = slowTick ? 1 : C.MINS_PER_TICK;
+    // Pause all time advancement and accrual while:
+    //   • an event card is waiting for player input, OR
+    //   • the overtime prompt is showing (player deciding whether to start OT)
+    const timePaused = State.activeEvent !== null || _isOTWaiting();
+    _lastMins = 0;
 
+    // ── OT-prompt 3-second auto-skip ──────────────────────────
+    const nowOTWaiting = _isOTWaiting();
+    if (nowOTWaiting && !_wasOTWaiting) {
+      clearTimeout(_otWaitTimer);
+      _otWaitTimer = setTimeout(() => {
+        if (_isOTWaiting()) _otSkippedToday = true;
+        _otWaitTimer = null;
+      }, 3000);
+    } else if (!nowOTWaiting && _otWaitTimer) {
+      clearTimeout(_otWaitTimer);
+      _otWaitTimer = null;
+    }
+    _wasOTWaiting = nowOTWaiting;
 
+    if (!timePaused) {
+      const slowTick = _isLunch() || (_otActive && _isOTWindow());
+      const mins     = slowTick ? 1 : C.MINS_PER_TICK;
+      _lastMins      = mins;
 
-    // OT accrual scaled to real-time rate so earnings are consistent
-    if (_otActive && _isOTWindow()) {
-      const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
-      State.addOT(gained);
+      // OT accrual
+      if (_otActive && _isOTWindow() && !mods.noEarnings) {
+        let gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
+        if (mods.systemBonus)   gained *= 2;
+        if (mods.systemPenalty) gained *= 0.5;
+        State.addOT(gained);
+      }
+
+      // Work hour accrual
+      if (_isWorkHours() && !_otActive && !mods.noEarnings) {
+        let fraction = mins / 60;
+        if (mods.doubleWH)      fraction *= 2;
+        if (mods.systemPenalty) fraction *= 0.5;
+        if (mods.systemBonus) {
+          State.addOT(fraction);
+        } else {
+          State.addWorkHours(fraction);
+        }
+      }
+
+      // Advance game time (frozen during broken-clock event)
+      if (!mods.clockPaused) {
+        State.minute += mins;
+        while (State.minute >= 60) {
+          State.minute -= 60;
+          State.hour++;
+        }
+        if (State.hour >= 24) {
+          State.hour -= 24;
+          State.dayIndex++;
+        }
+        if (State.dayIndex >= 7) {
+          State.dayIndex = 0;
+          State.week++;
+        }
+        if (State.dayIndex !== prevDay) _resetDailyOT();
+
+        // OT window closed while active — mark completed
+        if (_otActive && !_isOTWindow() && State.hour >= C.WORK_END + _otMaxHours) {
+          _otActive         = false;
+          _otCompletedToday = true;
+        }
+        // OT window closed and player never clicked — mark skipped
+        if (!_otActive && !_otCompletedToday && !_otSkippedToday
+            && State.trainingComplete
+            && State.hour >= C.WORK_END + _otMaxHours) {
+          _otSkippedToday = true;
+        }
+      }
     }
 
-    // Work hour accrual (base currency, earned during working shifts only)
-    if (_isWorkHours() && !_otActive) {
-      const workedFraction = mins / 60; // fraction of a game-hour this tick
-      State.addWorkHours(workedFraction);
-    }
-
-    // Advance game time
-    State.minute += mins;
-    while (State.minute >= 60) {
-      State.minute -= 60;
-      State.hour++;
-    }
-    if (State.hour >= 24) {
-      State.hour -= 24;
-      State.dayIndex++;
-    }
-    if (State.dayIndex >= 7) {
-      State.dayIndex = 0;
-      State.week++;
-    }
     if (State.eventCooldown > 0) State.eventCooldown--;
-
-    if (State.dayIndex !== prevDay) {
-      _resetDailyOT();
-    }
-
-    // OT window closed while active — mark completed
-    if (_otActive && !_isOTWindow() && State.hour >= C.WORK_END + _otMaxHours) {
-      _otActive         = false;
-      _otCompletedToday = true;
-    }
-
-    // OT window closed and player never clicked — mark skipped
-    if (!_otActive && !_otCompletedToday && !_otSkippedToday
-        && State.trainingComplete
-        && State.hour >= C.WORK_END + _otMaxHours) {
-      _otSkippedToday = true;
-    }
 
     _mood = _deriveMood();
 
@@ -173,8 +209,7 @@ const Time = (() => {
       ? (C.AUTO_OT_BASE * State.autoMultiplier).toFixed(1)
       : 0;
 
-    // Adjust tick rate for next interval based on current state
-    const nowSlow = _isLunch() || (_otActive && _isOTWindow());
+    const nowSlow = !timePaused && (_isLunch() || (_otActive && _isOTWindow()));
     _setTickDelay(nowSlow ? C.TICK_MS / 10 : C.TICK_MS);
 
     if (_onTick) _onTick();
@@ -241,9 +276,13 @@ const Time = (() => {
       return (h - C.LUNCH_START) / (C.LUNCH_END - C.LUNCH_START);
     },
 
-    otMaxHours() { return _otMaxHours; },
+    otMaxHours()    { return _otMaxHours; },
+    resetDailyOT()  { _resetDailyOT(); },
+    currentMins()   { return _lastMins; },
+    otWaiting()     { return _isOTWaiting(); },
 
     clickTick() {
+      if (State.activeEvent || _isOTWaiting()) return;
       const prevDay = State.dayIndex;
 
       State.minute += State.clickMinutes ?? 1;
