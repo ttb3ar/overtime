@@ -109,10 +109,6 @@ const State = {
       this.dayIndex = 0;
       this.week++;
     }
-    // check training completion
-    if (!this.trainingComplete && this.week > C.TRAINING_WEEKS) {
-      this.trainingComplete = true;
-    }
     // decrement event cooldown
     if (this.eventCooldown > 0) this.eventCooldown--;
   },
