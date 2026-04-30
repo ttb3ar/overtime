@@ -226,6 +226,41 @@ const Upgrades = (() => {
       ],
     },
 
+    {
+      id: 'efficiency',
+      unlock: () => (State.tiers?.promote ?? 0) >= 2,
+      tiers: [
+        {
+          name:     'work slower',
+          desc:     'better than looking lost.',
+          cost:     10,
+          currency: 'ot',
+          apply() { State.clickMinutes += 0.5; },
+        },
+        {
+          name:     'performative working',
+          desc:     'you look busy. that\'s basically the same thing.',
+          cost:     25,
+          currency: 'wh',
+          apply() { State.clickMinutes += 0.5; },
+        },
+        {
+          name:     'corporate clout',
+          desc:     'your calendar is full. no one questions it.',
+          cost:     32,
+          currency: 'ot',
+          apply() { State.clickMinutes += 0.5; },
+        },
+        {
+          name:     'strategic visibility',
+          desc:     'you\'ve been in so many meetings you\'ve become one.',
+          cost:     46,
+          currency: 'ot',
+          apply() { State.clickMinutes += 0.5; },
+        },
+      ],
+    },
+
   ];
 
   // ── Helpers ───────────────────────────────────────────────
@@ -296,6 +331,7 @@ const Upgrades = (() => {
       State.weekendWork = { satUntil: 0, sunUntil: 0 };
       State.autoMultiplier         = 1;
       State.lunchReduction         = 0;
+      State.clickMinutes           = 1;
       State.flags.skipLunch        = false;
       State.flags.outsourceSleep   = false;
       State.flags.autoOT           = false;
