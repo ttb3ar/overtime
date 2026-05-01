@@ -64,7 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
         UI.showClickQuip();
         return;
     }
-
+    
+    UI.setLastClick(e.clientX, e.clientY);
     Time.clickTick();
   });
 

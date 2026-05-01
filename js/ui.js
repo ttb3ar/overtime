@@ -92,6 +92,8 @@ const UI = (() => {
   let _quipTimer  = 0;
   let _shelfOpen  = false;
   let _lastRank   = null;
+  let _lastClick = { x: 0, y: 0 };
+  let _accrualFloatTick = 0;
 
   // ── Helpers ───────────────────────────────────────────────
 
@@ -175,6 +177,24 @@ const UI = (() => {
     } else {
       _quipTimer = 0;
     }
+  }
+
+  function _updateAccrualFloat() {
+    if (Time.otActive()) {
+      const gained = (C.AUTO_OT_BASE * State.autoMultiplier).toFixed(2);
+      _spawnCharacterFloat(`+${gained}✦`, 'ot');
+    } else if (Time.isWorkHours()) {
+      const gained = (C.MINS_PER_TICK / 60).toFixed(2);
+      _spawnCharacterFloat(`+${gained}⧗`, 'wh');
+    }
+  }
+
+  function _spawnCharacterFloat(text, type) {
+    const float = document.createElement('div');
+    float.className = `accrual-float${type ? ' ' + type : ''}`;
+    float.textContent = text;
+    el.character.parentElement.appendChild(float);
+    setTimeout(() => float.remove(), 2000);
   }
 
   // ── Status line ───────────────────────────────────────────
@@ -382,6 +402,7 @@ const UI = (() => {
   // ── Public API ────────────────────────────────────────────
 
   return {
+    setLastClick(x, y) { _lastClick = { x, y }; },
 
     init() {
       _cache();
@@ -402,6 +423,7 @@ const UI = (() => {
       _updateEvent();
       _updateUpgradeShelf();
       _updateRank();
+      _updateAccrualFloat(); 
     },
 
     bounceCharacter() {
@@ -428,6 +450,16 @@ const UI = (() => {
         el.character.classList.remove('happy');
         void el.character.offsetWidth; // force reflow
         el.character.classList.add('happy');
+
+        // floating +Xm text
+        const mins = State.clickMinutes ?? 1;
+        const float = document.createElement('div');
+        float.className = 'click-float';
+        float.textContent = `+${mins}m`;
+        float.style.left = _lastClick.x + 'px';
+        float.style.top  = _lastClick.y + 'px';
+        document.body.appendChild(float);
+        setTimeout(() => float.remove(), 800);
     },
   };
 
