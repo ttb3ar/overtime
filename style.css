@@ -480,6 +480,28 @@ html, body {
   75%     { transform: rotate(4deg); }
 }
 
+.accrual-float {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mid);
+  pointer-events: none;
+  color: var(--accent2);
+  animation: click-float-up 1.3s ease forwards;
+}
+
+.accrual-float.ot {
+  color: var(--accent);
+}
+
+@keyframes click-float-up {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-24px); }
+}
+
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
