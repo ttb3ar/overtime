@@ -13,6 +13,7 @@ const Time = (() => {
   let _otMaxHours       = 2;
   let _otCompletedToday = false;
   let _otSkippedToday   = false;
+  let _lastAccrual = { wh: 0, ot: 0 };
 
   // ── Character mood ────────────────────────────────────────
   let _mood = 'normal';
@@ -123,15 +124,17 @@ const Time = (() => {
 
 
     // OT accrual scaled to real-time rate so earnings are consistent
+    // Work hour accrual (base currency, earned during working shifts only)
     if (_otActive && _isOTWindow()) {
       const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
       State.addOT(gained);
-    }
-
-    // Work hour accrual (base currency, earned during working shifts only)
-    if (_isWorkHours() && !_otActive) {
-      const workedFraction = mins / 60; // fraction of a game-hour this tick
-      State.addWorkHours(workedFraction);
+      _lastAccrual = { wh: 0, ot: gained };
+    } else if (_isWorkHours()) {
+      const gained = mins / 60;
+      State.addWorkHours(gained);
+      _lastAccrual = { wh: gained, ot: 0 };
+    } else {
+      _lastAccrual = { wh: 0, ot: 0 };
     }
 
     // Advance game time
@@ -221,6 +224,7 @@ const Time = (() => {
     isOTWindow()       { return _isOTWindow(); },
     isWorkHours()      { return _isWorkHours(); },
     isLunch()          { return _isLunch(); },
+    lastAccrual()      { return _lastAccrual; },
 
     otProgress() {
       if (!_otActive) return 0;
@@ -244,6 +248,7 @@ const Time = (() => {
     otMaxHours() { return _otMaxHours; },
 
     clickTick() {
+      _lastAccrual = { wh: 0, ot: 0};
       const prevDay = State.dayIndex;
 
       State.minute += State.clickMinutes ?? 1;
