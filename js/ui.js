@@ -93,7 +93,7 @@ const UI = (() => {
   let _shelfOpen  = false;
   let _lastRank   = null;
   let _lastClick = { x: 0, y: 0 };
-  let _accrualFloatTick = 0;
+  let _isClickTick = false;
 
   // ── Helpers ───────────────────────────────────────────────
 
@@ -180,12 +180,11 @@ const UI = (() => {
   }
 
   function _updateAccrualFloat() {
-    if (Time.otActive()) {
-      const gained = (C.AUTO_OT_BASE * State.autoMultiplier).toFixed(2);
-      _spawnCharacterFloat(`+${gained}✦`, 'ot');
-    } else if (Time.isWorkHours()) {
-      const gained = (C.MINS_PER_TICK / 60).toFixed(2);
-      _spawnCharacterFloat(`+${gained}⧗`, 'wh');
+    const { wh, ot } = Time.lastAccrual();
+    if (ot > 0) {
+      _spawnCharacterFloat(`+${ot.toFixed(2)}✦`, 'ot');
+    } else if (wh > 0) {
+      _spawnCharacterFloat(`+${wh.toFixed(2)}⧗`, 'wh');
     }
   }
 
@@ -403,6 +402,7 @@ const UI = (() => {
 
   return {
     setLastClick(x, y) { _lastClick = { x, y }; },
+    setClickTick(val) { _isClickTick = val; },
 
     init() {
       _cache();
@@ -440,6 +440,17 @@ const UI = (() => {
       setTimeout(() => t.remove(), 3000);
     },
 
+    showCursorFloat() {
+      const mins = State.clickMinutes ?? 1;
+      const float = document.createElement('div');
+      float.className = 'click-float';
+      float.textContent = `+${mins}m`;
+      float.style.left = _lastClick.x + 'px';
+      float.style.top  = _lastClick.y + 'px';
+      document.body.appendChild(float);
+      setTimeout(() => float.remove(), 1000);
+    },
+
     showClickQuip() {
         const q = CLICK_QUIPS[Math.floor(Math.random() * CLICK_QUIPS.length)];
         el.speechBubble.textContent = q;
@@ -450,16 +461,6 @@ const UI = (() => {
         el.character.classList.remove('happy');
         void el.character.offsetWidth; // force reflow
         el.character.classList.add('happy');
-
-        // floating +Xm text
-        const mins = State.clickMinutes ?? 1;
-        const float = document.createElement('div');
-        float.className = 'click-float';
-        float.textContent = `+${mins}m`;
-        float.style.left = _lastClick.x + 'px';
-        float.style.top  = _lastClick.y + 'px';
-        document.body.appendChild(float);
-        setTimeout(() => float.remove(), 800);
     },
   };
 

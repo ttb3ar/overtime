@@ -66,7 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     UI.setLastClick(e.clientX, e.clientY);
+    UI.setClickTick(true);
+    UI.showCursorFloat();
     Time.clickTick();
+    UI.setClickTick(false);
   });
 
   // 6. Initial render
