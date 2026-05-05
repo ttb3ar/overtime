@@ -128,6 +128,20 @@ const UI = (() => {
     } else {
       _hide(el.otDisplay);
     }
+    document.title = `overtime — ${State.dayName().slice(0,3)} ${State.timeString()}`;
+  }
+
+  function _updateFavicon() {
+    const canvas = document.getElementById('favicon-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 32, 32);
+    ctx.font = '11px DM Mono, monospace';
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillText('(•_•)', 0, 20);
+    const link = document.querySelector("link[rel='icon']") || document.createElement('link');
+    link.rel = 'icon';
+    link.href = canvas.toDataURL();
+    document.head.appendChild(link);
   }
 
   // ── Character ─────────────────────────────────────────────
@@ -406,6 +420,7 @@ const UI = (() => {
 
     init() {
       _cache();
+      _updateFavicon();
 
       el.shelfToggle.addEventListener('click', () => {
         _shelfOpen = !_shelfOpen;
