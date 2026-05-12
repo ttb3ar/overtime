@@ -175,7 +175,7 @@ const Upgrades = (() => {
           desc:     'you\'re getting serious. +1h overtime.',
           cost:     215,
           currency: 'wh',
-          apply() { Time.setOTCap(Time.otMaxHours() + 1); },
+          apply() { Time.setOTCap(Time.otMaxHours() + 2); },
           cardName: 'latte',
         },
         {
@@ -183,7 +183,7 @@ const Upgrades = (() => {
           desc:     'no milk. no mercy. +1h overtime.',
           cost:     245,
           currency: 'wh',
-          apply() { Time.setOTCap(Time.otMaxHours() + 1); },
+          apply() { Time.setOTCap(Time.otMaxHours() + 2); },
           cardName: 'americano',
         },
         {
@@ -191,7 +191,7 @@ const Upgrades = (() => {
           desc:     'you\'ve stopped tasting it. +1h overtime.',
           cost:     270,
           currency: 'wh',
-          apply() { Time.setOTCap(Time.otMaxHours() + 1); },
+          apply() { Time.setOTCap(Time.otMaxHours() + 2); },
           cardName: 'drip',
         },
         {
@@ -199,7 +199,7 @@ const Upgrades = (() => {
           desc:     'plural. +1h overtime.',
           cost:     321,
           currency: 'wh',
-          apply() { Time.setOTCap(Time.otMaxHours() + 1); },
+          apply() { Time.setOTCap(Time.otMaxHours() + 3); },
           cardName: 'espresso shots',
         },
         {
@@ -207,9 +207,7 @@ const Upgrades = (() => {
           desc:     '+1h overtime.',
           cost:     372,
           currency: 'wh',
-          apply() {
-            State.autoMultiplier *= 1.5;
-          },
+          apply() { Time.setOTCap(Time.otMaxHours() + 3); },
           cardName: '???',
         },
         {
@@ -233,28 +231,28 @@ const Upgrades = (() => {
         {
           name:     'work slower',
           desc:     'better than looking lost.',
-          cost:     10,
+          cost:     73,
           currency: 'ot',
           apply() { State.clickMinutes += 0.5; },
         },
         {
           name:     'performative working',
           desc:     'you look busy. that\'s basically the same thing.',
-          cost:     25,
+          cost:     169,
           currency: 'wh',
           apply() { State.clickMinutes += 0.5; },
         },
         {
           name:     'corporate clout',
           desc:     'your calendar is full. no one questions it.',
-          cost:     32,
+          cost:     258,
           currency: 'ot',
           apply() { State.clickMinutes += 0.5; },
         },
         {
           name:     'strategic visibility',
           desc:     'you\'ve been in so many meetings you\'ve become one.',
-          cost:     46,
+          cost:     392,
           currency: 'ot',
           apply() { State.clickMinutes += 0.5; },
         },
