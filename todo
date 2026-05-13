@@ -4,6 +4,7 @@ mood system: polish on moods during certain conditions:
  -also makes the "morning work starts at" emote a groggy/tired face instead of a happy one 
 character just gets more and more tired/tourtured as the game progresses but the player gets more dopamine via resources going up
 
+different quips depending on the context (currently they are universal)
 
 upgrades:
 clicking upgrade tiles is slightly finicky > eventually smoothening it out could be good
