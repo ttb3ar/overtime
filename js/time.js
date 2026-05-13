@@ -14,6 +14,7 @@ const Time = (() => {
   let _otCompletedToday = false;
   let _otSkippedToday   = false;
   let _lastAccrual = { wh: 0, ot: 0 };
+  let _workedPastMidnight = false;
 
   // ── Character mood ────────────────────────────────────────
   let _mood = 'normal';
@@ -72,6 +73,11 @@ const Time = (() => {
   function _deriveMood() {
     if (State.flags.outsourceSleep) return 'ot';
 
+    // track if player worked past 2am
+    if (_otActive && State.hour >= 2 && State.hour < 6) _workedPastMidnight = true;
+    // clear at midday
+    if (State.hour >= 12) _workedPastMidnight = false;
+
     const h      = State.hour;
     const isWknd = _isWeekend();
 
@@ -88,6 +94,7 @@ const Time = (() => {
       return 'working';
     }
     if (!isWknd && (h < 7 || h >= 22)) return 'asleep';
+    if (!isWknd && _workedPastMidnight && h >= 7 && h < C.WORK_START) return 'groggy';
 
     if (_isLunch()) return 'lunch';
 
@@ -252,6 +259,7 @@ const Time = (() => {
     },
 
     otMaxHours() { return _otMaxHours; },
+    workedPastMidnight() { return _workedPastMidnight; },
 
     clickTick() {
       _lastAccrual = { wh: 0, ot: 0};
