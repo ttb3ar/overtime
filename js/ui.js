@@ -39,6 +39,7 @@ const UI = (() => {
       ot:           '(ง •_•)ง',
       ot_auto:      '(ง-.-)ง',
       done:         '( ˘ᵕ˘)',
+      done_late:    '( _ _)',
       unproductive: '(._. )',
       weekend:      '( ˘ω˘)',
       asleep:       '(-.-)zzz',
@@ -166,6 +167,7 @@ const UI = (() => {
       if (mood === 'unproductive') el.character.classList.add('tired');
       if (mood === 'asleep')       el.character.classList.add('tired');
       if (mood === 'lunch')        el.character.classList.add('guilty');
+      if (mood === 'done_late')    el.character.classList.add('tired');
       if (mood === 'waiting' && State.flags.autoOT) el.character.classList.add('tired');
       _lastMood = mood;
 
