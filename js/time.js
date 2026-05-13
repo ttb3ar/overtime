@@ -91,7 +91,7 @@ const Time = (() => {
 
     if (_isLunch()) return 'lunch';
 
-    if (_otActive && _isOTWindow()) return 'ot';
+    if (_otActive && _isOTWindow()) return State.flags.autoOT ? 'ot_auto' : 'ot';
     if (!_otActive && !_otCompletedToday && _isOTWindow()) return 'waiting';
     if (_otSkippedToday && h >= C.WORK_END + _otMaxHours) return 'unproductive';
     if (_otCompletedToday && h >= C.WORK_END + _otMaxHours) return 'done';
@@ -125,6 +125,12 @@ const Time = (() => {
 
     // OT accrual scaled to real-time rate so earnings are consistent
     // Work hour accrual (base currency, earned during working shifts only)
+    // Auto-activate OT at window open if flag is set
+    if (State.flags.autoOT && _isOTWindow() && !_otActive && !_otCompletedToday && !_otSkippedToday) {
+      _otActive    = true;
+      _otStartHour = C.WORK_END;
+    }
+
     if (_otActive && _isOTWindow()) {
       const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
       State.addOT(gained);

@@ -30,31 +30,39 @@ const UI = (() => {
   }
 
   // ── Character faces per mood ──────────────────────────────
-  const FACES = {
-    normal:       '( ˘ᵕ˘)',
-    working:      '( •_•)',
-    lunch:        '( ˘^ ˘)',
-    waiting:      '( •_•)',
-    ot:           '(ง •_•)ง',
-    done:         '( ˘ᵕ˘)',
-    unproductive: '(._. )',
-    weekend:      '( ˘ω˘)',
-    asleep:       '(-.-)zzz',
-    groggy:       '(\'\'\'_‸_)'
-  };
+  function _getFace(mood) {
+    const map = {
+      normal:       '( ˘ᵕ˘)',
+      working:      '( •_•)',
+      lunch:        '( ˘^ ˘)',
+      waiting:      State.flags.autoOT ? '(._.)' : '( •_•)',
+      ot:           '(ง •_•)ง',
+      ot_auto:      '(ง-.-)ง',
+      done:         '( ˘ᵕ˘)',
+      unproductive: '(._. )',
+      weekend:      '( ˘ω˘)',
+      asleep:       '(-.-)zzz',
+      groggy:       '(\'\'\'_‸_)'
+    };
+    return map[mood] ?? map.normal;
+  }
 
-  const SPEECH = {
-    normal:       null,
-    working:      null,
-    lunch:        'i could be working right now...',
-    waiting:      null,
-    ot:           'billing extra hours...',
-    done:         null,
-    unproductive: '...i could have stayed.',
-    weekend:      null,
-    asleep:       null,
-    groggy:       'a "productive" weekend awaits!',
-  };
+  function _getSpeech(mood) {
+    const map = {
+      normal:       null,
+      working:      null,
+      lunch:        'i could be working right now...',
+      waiting:      State.flags.autoOT ? 'sigh...' : null,
+      ot_auto:      'billing extra hours... again.',
+      ot:           'billing extra hours...',
+      done:         null,
+      unproductive: '...i could have stayed.',
+      weekend:      null,
+      asleep:       null,
+      groggy:       'a "productive" weekend awaits!',
+    };
+    return map[mood] ?? null;
+  }
 
   const WORK_QUIPS = [
     'pretending to read emails.',
@@ -149,17 +157,19 @@ const UI = (() => {
   function _updateCharacter() {
     const mood = Time.mood();
 
-    el.character.textContent = FACES[mood] ?? FACES.normal;
+    el.character.textContent = _getFace(mood);
 
     if (mood !== _lastMood) {
       el.character.className = '';
       if (mood === 'ot')           el.character.classList.add('happy');
+      if (mood === 'ot_auto')      el.character.classList.add('tired');
       if (mood === 'unproductive') el.character.classList.add('tired');
       if (mood === 'asleep')       el.character.classList.add('tired');
       if (mood === 'lunch')        el.character.classList.add('guilty');
+      if (mood === 'waiting' && State.flags.autoOT) el.character.classList.add('tired');
       _lastMood = mood;
 
-      const speech = SPEECH[mood];
+      const speech = _getSpeech(mood);
       if (speech) {
         el.speechBubble.textContent = speech;
         _show(el.speechBubble);
@@ -232,8 +242,9 @@ const UI = (() => {
     const map = {
       working:      `${State.dayName()}. keep it up.`,
       lunch:        'lunch break. 13:00 can\'t come soon enough.',
-      waiting:      'stay late?',
+      waiting:      State.flags.autoOT ? 'you already know.' : 'stay late?',
       ot:           `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
+      ot_auto:      `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
       done:         `${State.dayName()} evening.`,
       unproductive: `${State.dayName()} evening.`,
       weekend:      'weekend.',
@@ -269,7 +280,7 @@ const UI = (() => {
       return;
     }
 
-    if (mood === 'ot') {
+    if (mood === 'ot' || mood === 'ot_auto') {
       _show(el.progressWrap);
       _setProgress(Time.otProgress(), 'var(--accent)');
       return;
