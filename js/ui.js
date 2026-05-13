@@ -360,7 +360,16 @@ const UI = (() => {
       _hide(el.upgradeShelf);
       return;
     }
-    _show(el.upgradeShelf);
+    if (el.upgradeShelf.classList.contains('hidden')) {
+      el.upgradeShelf.classList.remove('hidden');
+      el.upgradeGrid.className = '';
+      el.shelfToggle.classList.add('shelf-new');
+      el.shelfToggle.addEventListener('click', () => {
+        el.shelfToggle.classList.remove('shelf-new');
+      }, { once: true });
+    } else {
+      _show(el.upgradeShelf);
+    }
     el.upgradeGrid.className = _shelfOpen ? 'open' : '';
 
     const allUpgrades = Upgrades.all();
