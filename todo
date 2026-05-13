@@ -1,12 +1,15 @@
+general:
+mood system: polish on moods during certain conditions:
+ -working after xpm makes the character just glad that its over instead of enjoying the evening
+ -also makes the "morning work starts at" emote a groggy/tired face instead of a happy one 
+character just gets more and more tired/tourtured as the game progresses but the player gets more dopamine via resources going up
+
+
 upgrades:
 clicking upgrade tiles is slightly finicky > eventually smoothening it out could be good
 
 once some condition is met (maybe all weekend + ot all night):
 weekend worktime can start to become ot via an upgrades
-
-once recognized employee is unlocked:
-an upgrade becomes available that makes clicks go forward by .1 faster or something
- -working slower > preformative working > corperate clout > 
 
 eventually there'll be a manager tier upgrade that allows hiring interns (who can be individually upgraded?)
 -each intern will bring in their own wh and ot that count towards your total
