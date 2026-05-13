@@ -247,12 +247,13 @@ const UI = (() => {
       waiting:      State.flags.autoOT ? 'you already know.' : 'stay late?',
       ot:           `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
       ot_auto:      `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
+      done_late:    'survived another day.',
       done:         `${State.dayName()} evening.`,
       unproductive: `${State.dayName()} evening.`,
       weekend:      'weekend.',
       asleep:       'sleeping.',
       normal:       `${State.dayName()}. work starts at ${C.WORK_START}:00.`,
-      groggy: 'it\'s early. but you\'re here.',
+      groggy:       'it\'s early. but you\'re here.',
     };
 
     el.statusLine.textContent = map[mood] ?? '';
