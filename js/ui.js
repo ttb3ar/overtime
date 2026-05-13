@@ -39,6 +39,7 @@ const UI = (() => {
       ot:           '(ง •_•)ง',
       ot_auto:      '(ง-.-)ง',
       done:         '( ˘ᵕ˘)',
+      done_late:    '( _ _)',
       unproductive: '(._. )',
       weekend:      '( ˘ω˘)',
       asleep:       '(-.-)zzz',
@@ -166,6 +167,7 @@ const UI = (() => {
       if (mood === 'unproductive') el.character.classList.add('tired');
       if (mood === 'asleep')       el.character.classList.add('tired');
       if (mood === 'lunch')        el.character.classList.add('guilty');
+      if (mood === 'done_late')    el.character.classList.add('tired');
       if (mood === 'waiting' && State.flags.autoOT) el.character.classList.add('tired');
       _lastMood = mood;
 
@@ -245,12 +247,13 @@ const UI = (() => {
       waiting:      State.flags.autoOT ? 'you already know.' : 'stay late?',
       ot:           `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
       ot_auto:      `overtime until ${C.WORK_END + Time.otMaxHours()}:00.`,
+      done_late:    'survived another day.',
       done:         `${State.dayName()} evening.`,
       unproductive: `${State.dayName()} evening.`,
       weekend:      'weekend.',
       asleep:       'sleeping.',
       normal:       `${State.dayName()}. work starts at ${C.WORK_START}:00.`,
-      groggy: 'it\'s early. but you\'re here.',
+      groggy:       'it\'s early. but you\'re here.',
     };
 
     el.statusLine.textContent = map[mood] ?? '';
