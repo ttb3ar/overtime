@@ -41,6 +41,17 @@ const Upgrades = (() => {
           },
           cardName: 'employee → recognized',
         },
+        {
+          name:     'team leader',
+          rank:     'team leader',
+          desc:     'manager-level responsibility. no additional perks. overtime is now "encouraged".',
+          cost:     180,
+          currency: 'wh',
+          apply() {
+            State.flags.autoOT = true;
+          },
+          cardName: 'recognized → team leader',
+        },
         // room for manager, director, etc.
       ],
     },
