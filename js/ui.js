@@ -60,7 +60,7 @@ const UI = (() => {
       unproductive: '...i could have stayed.',
       weekend:      null,
       asleep:       null,
-      groggy:       'a "productive" weekend awaits!',
+      groggy:       'so tired...',
     };
     return map[mood] ?? null;
   }
