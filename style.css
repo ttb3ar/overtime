@@ -290,6 +290,16 @@ html, body {
 
 #shelf-toggle:hover { color: var(--fg); }
 
+#shelf-toggle.shelf-new {
+  color: var(--accent);
+  animation: shelf-attention 1.5s ease infinite;
+}
+
+@keyframes shelf-attention {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
 #upgrade-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
