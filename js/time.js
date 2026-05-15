@@ -91,7 +91,11 @@ const Time = (() => {
         if (hasWeekendWork && h < C.WORK_START) return 'groggy';
         return 'weekend';
       }
-      return 'working';
+      const otUntil = State.dayIndex === 5
+        ? State.weekendWork.satOT
+        : State.weekendWork.sunOT;
+      const h2 = State.hour + State.minute / 60;
+      return (otUntil > 0 && h2 < otUntil) ? 'ot_auto' : 'working';
     }
     if (!isWknd && (h < 7 || h >= 22)) return 'asleep';
     if (!isWknd && _workedPastMidnight && h >= 7 && h < C.WORK_START) return 'groggy';
@@ -101,7 +105,7 @@ const Time = (() => {
     if (_otActive && _isOTWindow()) return State.flags.autoOT ? 'ot_auto' : 'ot';
     if (!_otActive && !_otCompletedToday && _isOTWindow()) return 'waiting';
     if (_otSkippedToday && h >= C.WORK_END + _otMaxHours) return 'unproductive';
-    if (_otCompletedToday && h >= C.WORK_END + _otMaxHours) return h >= 20 ? 'done_late' : 'done';
+    if (_otCompletedToday && h >= C.WORK_END + _otMaxHours) return h >= 23 ? 'done_late' : 'done';
     if (h >= C.WORK_START && h < C.WORK_END) return 'working';
     if (h >= C.WORK_END) return 'done';
     return 'normal';
@@ -121,6 +125,7 @@ const Time = (() => {
 
   function _processTick() {
     const prevDay = State.dayIndex;
+    _lastAccrual = { wh: 0, ot: 0 };
 
     // Slow periods: 1 game-min per tick, but 10x faster ticks (100ms).
     // Normal: MINS_PER_TICK (60) game-mins per tick at 1000ms.
@@ -144,10 +149,22 @@ const Time = (() => {
       _lastAccrual = { wh: 0, ot: gained };
     } else if (_isWorkHours()) {
       const gained = mins / 60;
-      State.addWorkHours(gained);
-      _lastAccrual = { wh: gained, ot: 0 };
-    } else {
-      _lastAccrual = { wh: 0, ot: 0 };
+      if (_isWeekend()) {
+        const otUntil = State.dayIndex === 5
+          ? State.weekendWork.satOT
+          : State.weekendWork.sunOT;
+        const h = State.hour + State.minute / 60;
+        if (otUntil > 0 && h < otUntil) {
+          State.addOT(gained);
+          _lastAccrual = { wh: 0, ot: gained };
+        } else {
+          State.addWorkHours(gained);
+          _lastAccrual = { wh: gained, ot: 0 };
+        }
+      } else {
+        State.addWorkHours(gained);
+        _lastAccrual = { wh: gained, ot: 0 };
+      }
     }
 
     // Advance game time

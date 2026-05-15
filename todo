@@ -1,18 +1,20 @@
 general:
-mood system: polish on moods during certain conditions:
- -working after xpm makes the character just glad that its over instead of enjoying the evening
- -also makes the "morning work starts at" emote a groggy/tired face instead of a happy one 
+mood system: polish on moods during certain conditions
 character just gets more and more tired/tourtured as the game progresses but the player gets more dopamine via resources going up
 
 different quips depending on the context (currently they are universal)
 
 better mobile compatability
 
+syncing player clicks with currency gain instead of just progressing time forward
+ -chracter indicator too
+
 upgrades:
+redo font in upgrade shelf so wh is blue instead of red
 clicking upgrade tiles is slightly finicky > eventually smoothening it out could be good
 
 once some condition is met (maybe all weekend + ot all night):
-weekend worktime can start to become ot via an upgrades
+weekend worktime can start to become ot via an upgrades (in progress)
 
 eventually there'll be a manager tier upgrade that allows hiring interns (who can be individually upgraded?)
 -each intern will bring in their own wh and ot that count towards your total

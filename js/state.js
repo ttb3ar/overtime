@@ -39,10 +39,10 @@ const State = {
   flags: {
     skipLunch:      false,  // lunch hours count as work
     //sacrificeWeekend: false,// weekends count as work
-    weekendWork: { satUntil: 0, sunUntil: 0 },
     outsourceSleep: false,  // all hours count as work
     autoOT:         false,  // passive OT accrual
     openDoor:       false,  // higher event frequency
+    weekendWork: { satUntil: 0, sunUntil: 0, satOT: 0, sunOT: 0 },
   },
 
   // ── Auto-OT multiplier (stacks from upgrades) ────────────
@@ -180,7 +180,7 @@ const State = {
     this.tiers         = data.tiers         ?? {};
     this.lunchReduction = data.lunchReduction ?? 0;
     this.clickMinutes  = data.clickMinutes   ?? 1;
-    this.weekendWork = data.weekendWork ?? { satUntil: 0, sunUntil: 0 };
+    this.weekendWork = data.weekendWork ?? { satUntil: 0, sunUntil: 0, satOT: 0, sunOT: 0 };
     // re-derive modifiers from bought upgrades
     this.modifiers = [];
   },

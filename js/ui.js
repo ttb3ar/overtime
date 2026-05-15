@@ -205,12 +205,20 @@ const UI = (() => {
     }
   }
 
+  let _whFloatBuffer = 0;
+
   function _updateAccrualFloat() {
     const { wh, ot } = Time.lastAccrual();
     if (ot > 0) {
       _spawnCharacterFloat(`+${ot.toFixed(2)}✦`, 'ot');
     } else if (wh > 0) {
-      _spawnCharacterFloat(`+${wh.toFixed(2)}⧗`, 'wh');
+      _whFloatBuffer += wh;
+      if (_whFloatBuffer >= (C.MINS_PER_TICK / 60) - 0.001) {
+        _spawnCharacterFloat(`+${_whFloatBuffer.toFixed(2)}⧗`, 'wh');
+        _whFloatBuffer = 0;
+      }
+    } else {
+      _whFloatBuffer = 0;
     }
   }
 
@@ -397,7 +405,7 @@ const UI = (() => {
 
       card.innerHTML = `
         <div class="u-name">${tier.name}</div>
-        <div class="u-cost">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
+        <div class="u-cost ${cur === 'wh' ? 'wh' : ''}">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
         <div class="u-desc">${tier.desc}</div>
       `;
 
