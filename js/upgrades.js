@@ -119,6 +119,19 @@ const Upgrades = (() => {
       ],
     },
 
+    {
+      id: 'weekend_ot',
+      unlock: () => (State.tiers?.weekend ?? 0) >= 1,
+      tiers: [
+        {
+          name:     'weekend billing',
+          desc:     'log weekend hours as overtime. someone will notice eventually.',
+          cost:     40,
+          currency: 'ot',
+          apply() { State.flags.weekendOT = true; },
+        },
+      ],
+    },
 
     {
       id: 'lunch',
@@ -345,6 +358,7 @@ const Upgrades = (() => {
       State.flags.outsourceSleep   = false;
       State.flags.autoOT           = false;
       State.flags.openDoor         = false;
+      State.flags.weekendOT        = false;
 
       const otCapBase = 2;
       let   otCapExtra = 0;

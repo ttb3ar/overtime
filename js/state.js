@@ -43,6 +43,7 @@ const State = {
     outsourceSleep: false,  // all hours count as work
     autoOT:         false,  // passive OT accrual
     openDoor:       false,  // higher event frequency
+    weekendOT:      false,  // weekend work time now counts as OT
   },
 
   // ── Auto-OT multiplier (stacks from upgrades) ────────────
