@@ -91,7 +91,11 @@ const Time = (() => {
         if (hasWeekendWork && h < C.WORK_START) return 'groggy';
         return 'weekend';
       }
-      return State.flags.weekendOT ? 'ot_auto' : 'working';
+      const otUntil = State.dayIndex === 5
+        ? State.weekendWork.satOT
+        : State.weekendWork.sunOT;
+      const h2 = State.hour + State.minute / 60;
+      return (otUntil > 0 && h2 < otUntil) ? 'ot_auto' : 'working';
     }
     if (!isWknd && (h < 7 || h >= 22)) return 'asleep';
     if (!isWknd && _workedPastMidnight && h >= 7 && h < C.WORK_START) return 'groggy';
@@ -145,10 +149,18 @@ const Time = (() => {
       _lastAccrual = { wh: 0, ot: gained };
     } else if (_isWorkHours()) {
       const gained = mins / 60;
-      const isWeekendShift = _isWeekend();
-      if (isWeekendShift && State.flags.weekendOT) {
-        State.addOT(gained);
-        _lastAccrual = { wh: 0, ot: gained };
+      if (_isWeekend()) {
+        const otUntil = State.dayIndex === 5
+          ? State.weekendWork.satOT
+          : State.weekendWork.sunOT;
+        const h = State.hour + State.minute / 60;
+        if (otUntil > 0 && h < otUntil) {
+          State.addOT(gained);
+          _lastAccrual = { wh: 0, ot: gained };
+        } else {
+          State.addWorkHours(gained);
+          _lastAccrual = { wh: gained, ot: 0 };
+        }
       } else {
         State.addWorkHours(gained);
         _lastAccrual = { wh: gained, ot: 0 };

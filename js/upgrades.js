@@ -124,11 +124,68 @@ const Upgrades = (() => {
       unlock: () => (State.tiers?.weekend ?? 0) >= 1,
       tiers: [
         {
-          name:     'weekend billing',
-          desc:     'log weekend hours as overtime. someone will notice eventually.',
+          name:     'saturday morning billing',
+          desc:     'those hours count now.',
           cost:     40,
           currency: 'ot',
-          apply() { State.flags.weekendOT = true; },
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 1,
+          apply()   { State.weekendWork.satOT = Math.max(State.weekendWork.satOT ?? 0, 12); },
+        },
+        {
+          name:     'sunday morning billing',
+          desc:     'those hours count now.',
+          cost:     60,
+          currency: 'ot',
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 2,
+          apply()   { State.weekendWork.sunOT = Math.max(State.weekendWork.sunOT ?? 0, 12); },
+        },
+        {
+          name:     'saturday afternoon billing',
+          desc:     'those hours count now.',
+          cost:     80,
+          currency: 'ot',
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 3,
+          apply()   { State.weekendWork.satOT = Math.max(State.weekendWork.satOT ?? 0, 15.5); },
+        },
+        {
+          name:     'sunday afternoon billing',
+          desc:     'those hours count now.',
+          cost:     100,
+          currency: 'ot',
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 4,
+          apply()   { State.weekendWork.sunOT = Math.max(State.weekendWork.sunOT ?? 0, 15.5); },
+        },
+        {
+          name:     'saturday evening billing',
+          desc:     'those hours count now.',
+          cost:     120,
+          currency: 'ot',
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 5,
+          apply()   { State.weekendWork.satOT = Math.max(State.weekendWork.satOT ?? 0, 17); },
+        },
+        {
+          name:     'sunday evening billing',
+          desc:     'those hours count now.',
+          cost:     140,
+          currency: 'ot',
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 6,
+          apply()   { State.weekendWork.sunOT = Math.max(State.weekendWork.sunOT ?? 0, 17); },
+        },
+        {
+          name:     'saturday night billing',
+          desc:     'those hours count now.',
+          cost:     160,
+          currency: 'ot',
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 7,
+          apply()   { State.weekendWork.satOT = Math.max(State.weekendWork.satOT ?? 0, 24); },
+        },
+        {
+          name:     'sunday night billing',
+          desc:     'those hours count now.',
+          cost:     180,
+          currency: 'ot',
+          unlock:   () => (State.tiers?.weekend ?? 0) >= 8,
+          apply()   { State.weekendWork.sunOT = Math.max(State.weekendWork.sunOT ?? 0, 24); },
         },
       ],
     },
@@ -308,7 +365,10 @@ const Upgrades = (() => {
       const g = _getGroup(groupId);
       if (!g) return null;
       const idx = _getTierIndex(groupId);
-      return g.tiers[idx] ?? null;
+      const tier = g.tiers[idx];
+      if (!tier) return null;
+      if (tier.unlock && !tier.unlock()) return null;
+      return tier;
     },
 
     // Is the group visible in the shelf?
