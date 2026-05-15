@@ -10,11 +10,9 @@ syncing player clicks with currency gain instead of just progressing time forwar
  -chracter indicator too
 
 upgrades:
-redo font in upgrade shelf so wh is blue instead of red
 clicking upgrade tiles is slightly finicky > eventually smoothening it out could be good
 
 once some condition is met (maybe all weekend + ot all night):
-weekend worktime can start to become ot via an upgrades (in progress)
 
 eventually there'll be a manager tier upgrade that allows hiring interns (who can be individually upgraded?)
 -each intern will bring in their own wh and ot that count towards your total
