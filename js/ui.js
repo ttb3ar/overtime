@@ -405,7 +405,7 @@ const UI = (() => {
 
       card.innerHTML = `
         <div class="u-name">${tier.name}</div>
-        <div class="u-cost">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
+        <div class="u-cost ${cur === 'wh' ? 'wh' : ''}">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
         <div class="u-desc">${tier.desc}</div>
       `;
 

@@ -362,6 +362,10 @@ html, body {
   color: var(--accent);
 }
 
+.u-cost.wh {
+  color: var(--accent2);
+}
+
 .u-cost.bought-label {
   color: var(--good);
 }
