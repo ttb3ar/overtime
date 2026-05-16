@@ -7,7 +7,7 @@ different quips depending on the context (currently they are universal)
 
 better mobile compatability
 
-fix day rollover during ot logic
+fix day rollover during ot logic (needs testing but possibly done)
 
 syncing player clicks with currency gain instead of just progressing time forward
  -chracter indicator too

@@ -56,22 +56,27 @@ const Time = (() => {
     if (!State.trainingComplete) return false;
     if (_isWeekend()) return false;
     if (State.flags.outsourceSleep) return false;
-    const h = State.hour;
+    const h = State.hour + State.minute / 60;
+    if (_otActive) {
+      return _otHoursElapsed() < _otMaxHours;
+    }
     return h >= C.WORK_END && h < C.WORK_END + _otMaxHours;
   }
 
   function _otHoursElapsed() {
     if (_otStartHour === null) return 0;
-    return (State.hour + State.minute / 60) - _otStartHour;
+    let elapsed = (State.hour + State.minute / 60) - _otStartHour;
+    if (elapsed < 0) elapsed += 24;
+    return elapsed;
   }
 
   function _resetDailyOT() {
-    _otActive         = false;
+    if (_otActive) return;
     _otStartHour      = null;
-    _otEndHour = null;
     _otCompletedToday = false;
     _otSkippedToday   = false;
-    _workedWeekend = false;
+    _otEndHour        = null;
+    _workedPastMidnight = false;
   }
 
   function _deriveMood() {
@@ -80,7 +85,7 @@ const Time = (() => {
     // track if player worked past 2am
     if (_otActive && State.hour >= 2 && State.hour < 6) _workedPastMidnight = true;
     // clear at midday
-    if (State.hour >= 12) _workedPastMidnight = false;
+    if (State.hour >= 12 && !_otActive) _workedPastMidnight = false;
 
     const h      = State.hour;
     const isWknd = _isWeekend();
@@ -194,7 +199,7 @@ const Time = (() => {
     }
 
     // OT window closed while active — mark completed
-    if (_otActive && !_isOTWindow() && State.hour >= C.WORK_END + _otMaxHours) {
+    if (_otActive && !_isOTWindow()) {
       _otActive         = false;
       _otCompletedToday = true;
       _otEndHour        = State.hour;
@@ -203,7 +208,8 @@ const Time = (() => {
     // OT window closed and player never clicked — mark skipped
     if (!_otActive && !_otCompletedToday && !_otSkippedToday
         && State.trainingComplete
-        && State.hour >= C.WORK_END + _otMaxHours) {
+        && !_isOTWindow()
+        && State.hour >= C.WORK_END) {
       _otSkippedToday = true;
     }
 
@@ -252,6 +258,11 @@ const Time = (() => {
 
     setOTCap(hours) {
       _otMaxHours = hours;
+    },
+
+    otEndTime() {
+      const raw = (_otStartHour ?? C.WORK_END) + _otMaxHours;
+      return raw >= 24 ? raw - 24 : raw;
     },
 
     mood()             { return _mood; },
