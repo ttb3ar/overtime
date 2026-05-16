@@ -97,7 +97,7 @@ const Time = (() => {
       const h2 = State.hour + State.minute / 60;
       return (otUntil > 0 && h2 < otUntil) ? 'ot_auto' : 'working';
     }
-    if (!isWknd && (h < 7 || h >= 22)) return 'asleep';
+    if (!isWknd && (h < 7 || h >= 22) && !_otActive) return 'asleep';
     if (!isWknd && _workedPastMidnight && h >= 7 && h < C.WORK_START) return 'groggy';
 
     if (_isLunch()) return 'lunch';
