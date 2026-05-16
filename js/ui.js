@@ -103,6 +103,7 @@ const UI = (() => {
   let _lastRank   = null;
   let _lastClick = { x: 0, y: 0 };
   let _isClickTick = false;
+  let _lastTiersKey = '';
 
   // ── Helpers ───────────────────────────────────────────────
 
@@ -383,8 +384,20 @@ const UI = (() => {
     const allUpgrades = Upgrades.all();
     if (!allUpgrades.length) return;
 
+  const tiersKey = JSON.stringify(State.tiers);
+  if (tiersKey !== _lastTiersKey) {
+    _lastTiersKey = tiersKey;
     el.upgradeGrid.innerHTML = '';
-    let anyVisible = false;
+  } else {
+    el.upgradeGrid.querySelectorAll('.upgrade-card').forEach(card => {
+      const cur = card.dataset.currency;
+      const cost = parseFloat(card.dataset.cost);
+      const balance = cur === 'wh' ? State.workHours : State.ot;
+      card.classList.toggle('affordable', balance >= cost);
+    });
+    return;
+  }
+  let anyVisible = false;
 
     const groups = Upgrades.all();
     groups.forEach(g => {
@@ -402,6 +415,8 @@ const UI = (() => {
 
       const card = document.createElement('div');
       card.className = 'upgrade-card' + (affordable ? ' affordable' : '');
+      card.dataset.currency = cur;
+      card.dataset.cost = tier.cost;
 
       card.innerHTML = `
         <div class="u-name">${tier.name}</div>
