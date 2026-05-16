@@ -15,6 +15,8 @@ const Time = (() => {
   let _otSkippedToday   = false;
   let _lastAccrual = { wh: 0, ot: 0 };
   let _workedPastMidnight = false;
+  let _workedWeekend = false;
+  let _otEndHour = null;
 
   // ── Character mood ────────────────────────────────────────
   let _mood = 'normal';
@@ -66,8 +68,10 @@ const Time = (() => {
   function _resetDailyOT() {
     _otActive         = false;
     _otStartHour      = null;
+    _otEndHour = null;
     _otCompletedToday = false;
     _otSkippedToday   = false;
+    _workedWeekend = false;
   }
 
   function _deriveMood() {
@@ -89,15 +93,17 @@ const Time = (() => {
       if (h >= until || h < C.WORK_START) {
         if (h >= 22 || h < 7) return 'asleep';
         if (hasWeekendWork && h < C.WORK_START) return 'groggy';
+        if (_workedWeekend) return 'done_late';
         return 'weekend';
       }
+      if (h >= C.WORK_START) _workedWeekend = true;
       const otUntil = State.dayIndex === 5
         ? State.weekendWork.satOT
         : State.weekendWork.sunOT;
       const h2 = State.hour + State.minute / 60;
       return (otUntil > 0 && h2 < otUntil) ? 'ot_auto' : 'working';
     }
-    if (!isWknd && (h < 7 || h >= 22) && !_otActive) return 'asleep';
+    if (!isWknd && (h < 7 || h >= 23) && !_otActive && !(_otCompletedToday && _otEndHour >= 23)) return 'asleep';
     if (!isWknd && _workedPastMidnight && h >= 7 && h < C.WORK_START) return 'groggy';
 
     if (_isLunch()) return 'lunch';
@@ -105,7 +111,7 @@ const Time = (() => {
     if (_otActive && _isOTWindow()) return State.flags.autoOT ? 'ot_auto' : 'ot';
     if (!_otActive && !_otCompletedToday && _isOTWindow()) return 'waiting';
     if (_otSkippedToday && h >= C.WORK_END + _otMaxHours) return 'unproductive';
-    if (_otCompletedToday && h >= C.WORK_END + _otMaxHours) return h >= 23 ? 'done_late' : 'done';
+    if (_otCompletedToday) return (_otEndHour !== null && _otEndHour >= 20) ? 'done_late' : 'done';
     if (h >= C.WORK_START && h < C.WORK_END) return 'working';
     if (h >= C.WORK_END) return 'done';
     return 'normal';
@@ -191,6 +197,7 @@ const Time = (() => {
     if (_otActive && !_isOTWindow() && State.hour >= C.WORK_END + _otMaxHours) {
       _otActive         = false;
       _otCompletedToday = true;
+      _otEndHour        = State.hour;
     }
 
     // OT window closed and player never clicked — mark skipped
