@@ -111,7 +111,7 @@ const Time = (() => {
     if (_otActive && _isOTWindow()) return State.flags.autoOT ? 'ot_auto' : 'ot';
     if (!_otActive && !_otCompletedToday && _isOTWindow()) return 'waiting';
     if (_otSkippedToday && h >= C.WORK_END + _otMaxHours) return 'unproductive';
-    if (_otCompletedToday) return (_otEndHour !== null && _otEndHour >= 20) ? 'done_late' : 'done';
+    if (_otCompletedToday) return (_otEndHour !== null && _otEndHour >= 23) ? 'done_late' : 'done';
     if (h >= C.WORK_START && h < C.WORK_END) return 'working';
     if (h >= C.WORK_END) return 'done';
     return 'normal';
