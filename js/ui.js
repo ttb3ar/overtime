@@ -256,7 +256,9 @@ const UI = (() => {
       waiting:      State.flags.autoOT ? 'you already know.' : 'stay late?',
       ot:           `overtime until ${Time.otEndTime() < C.WORK_END ? 'tomorrow ' : ''}${Time.otEndTime()}:00.`,
       ot_auto:      `overtime until ${Time.otEndTime() < C.WORK_END ? 'tomorrow ' : ''}${Time.otEndTime()}:00.`,
-      done_late:    'survived another day.',
+      done_late: C.WEEKEND.includes(State.dayIndex)
+        ? '"enjoying" the weekend.'
+        : 'survived another day.',
       done:         `${State.dayName()} evening.`,
       unproductive: `${State.dayName()} evening.`,
       weekend:      'weekend.',

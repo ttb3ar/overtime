@@ -286,11 +286,33 @@ const Time = (() => {
     shiftProgress() {
       const h = State.hour + State.minute / 60;
       if (h < C.WORK_START) return 0;
-      const end = _isWeekend()
-        ? (State.dayIndex === 5 ? State.weekendWork.satUntil : State.weekendWork.sunUntil)
-        : C.WORK_END;
-      if (h >= end) return 1;
-      return (h - C.WORK_START) / (end - C.WORK_START);
+      if (_isWeekend()) {
+        const until = State.dayIndex === 5 ? State.weekendWork.satUntil : State.weekendWork.sunUntil;
+        const otUntil = State.dayIndex === 5 ? State.weekendWork.satOT : State.weekendWork.sunOT;
+        const start = otUntil > 0 ? otUntil : C.WORK_START;
+        if (h < start) return 0;
+        if (h >= until) return 1;
+        return (h - start) / (until - start);
+      }
+      if (h >= C.WORK_END) return 1;
+      return (h - C.WORK_START) / (C.WORK_END - C.WORK_START);
+    },
+
+    otProgress() {
+      if (!_otActive) {
+        // weekend OT: use satOT/sunOT window
+        if (_isWeekend()) {
+          const otUntil = State.dayIndex === 5
+            ? State.weekendWork.satOT
+            : State.weekendWork.sunOT;
+          if (!otUntil) return 0;
+          const h = State.hour + State.minute / 60;
+          if (h >= otUntil) return 0;   // ← OT window passed, hand off to shift bar
+          return Math.min(Math.max((h - C.WORK_START) / (otUntil - C.WORK_START), 0), 1);
+        }
+        return 0;
+      }
+      return Math.min(_otHoursElapsed() / _otMaxHours, 1);
     },
 
     lunchProgress() {
