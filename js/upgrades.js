@@ -51,6 +51,18 @@ const Upgrades = (() => {
             State.flags.autoOT = true;
           },
           cardName: 'recognized → team leader',
+        }, 
+        {
+          name:     'manager',
+          rank:     'manager',
+          desc:     'you thought this would make you happy but all you feel is...',
+          cost:     180,
+          currency: 'wh',
+          apply() {
+            State.flags.autoOT = true;
+            //todo
+          },
+          cardName: 'team leader → manager',
         },
         // room for manager, director, etc.
       ],
