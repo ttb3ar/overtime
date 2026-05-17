@@ -55,7 +55,7 @@ const Upgrades = (() => {
         {
           name:     'manager',
           rank:     'manager',
-          desc:     'you thought this would make you happy but all you feel is...',
+          desc:     'you thought this would make you happy',
           cost:     180,
           currency: 'wh',
           apply() {
