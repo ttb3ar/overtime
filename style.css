@@ -51,10 +51,11 @@ html, body {
 #header {
   width: 100%;
   max-width: 480px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto auto 1fr;
+  grid-template-rows: auto auto;
   align-items: center;
-  padding: 24px 0 0;
+  padding: 24px 24px 0;
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 300;
@@ -62,6 +63,11 @@ html, body {
   letter-spacing: 0.02em;
   user-select: none;
 }
+
+#game-time   { grid-column: 1; grid-row: 1; }
+#week-display { grid-column: 4; grid-row: 1; text-align: right; }
+#wh-display  { grid-column: 2; grid-row: 2; text-align: right; padding-right: 8px; padding-top: 6px; }
+#ot-display  { grid-column: 3; grid-row: 2; text-align: left;  padding-left: 8px;  padding-top: 6px; }
 
 #ot-display {
   color: var(--accent);
@@ -83,10 +89,18 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 28px;
-  padding: 48px 24px 250px;  /* bottom clears shelf + log bar */
+  padding: 16px 24px 220px;  /* bottom clears shelf + log bar */
   text-align: center;
   min-height: 0;
   user-select: none;
+}
+
+@media (max-height: 500px) {
+  #stage {
+    padding: 8px 24px 0;
+    gap: 12px;
+    justify-content: center;
+  }
 }
 
 /* ── Character ──────────────────────────────────────────────── */
@@ -107,6 +121,12 @@ html, body {
   animation: breathe 4s ease-in-out infinite;
   cursor: default;
   user-select: none;
+}
+
+@media (max-height: 500px) {
+  #character {
+    font-size: 20px;
+  }
 }
 
 #character.tired    { filter: saturate(0.3); opacity: 0.7; }
@@ -314,9 +334,9 @@ html, body {
 }
 
 #upgrade-grid.open {
-  max-height: 600px;
+  max-height: 55vh;
   opacity: 1;
-  overflow: visible;
+  overflow-y: auto;
 }
 
 .upgrade-card {
