@@ -134,26 +134,7 @@ const Time = (() => {
   // Per-tick logic
   // ──────────────────────────────────────────────────────────
 
-  function _processTick() {
-    const prevDay = State.dayIndex;
-    _lastAccrual = { wh: 0, ot: 0 };
-
-    // Slow periods: 1 game-min per tick, but 10x faster ticks (100ms).
-    // Normal: MINS_PER_TICK (60) game-mins per tick at 1000ms.
-    // Net game-time rate is identical; the clock just reads smoothly.
-    const slowTick = _isLunch() || (_otActive && _isOTWindow());
-    const mins     = slowTick ? 1 : C.MINS_PER_TICK;
-
-
-
-    // OT accrual scaled to real-time rate so earnings are consistent
-    // Work hour accrual (base currency, earned during working shifts only)
-    // Auto-activate OT at window open if flag is set
-    if (State.flags.autoOT && _isOTWindow() && !_otActive && !_otCompletedToday && !_otSkippedToday) {
-      _otActive    = true;
-      _otStartHour = C.WORK_END;
-    }
-
+  function _runAccrual(mins) {
     if (_otActive && _isOTWindow()) {
       const gained = C.AUTO_OT_BASE * State.autoMultiplier * (mins / C.MINS_PER_TICK);
       State.addOT(gained);
@@ -176,6 +157,29 @@ const Time = (() => {
         State.addWorkHours(gained);
         _lastAccrual = { wh: gained, ot: 0 };
       }
+    } else {
+      _lastAccrual = { wh: 0, ot: 0 };
+    }
+  }
+
+  function _processTick() {
+    const prevDay = State.dayIndex;
+    _lastAccrual = { wh: 0, ot: 0 };
+
+    // Slow periods: 1 game-min per tick, but 10x faster ticks (100ms).
+    // Normal: MINS_PER_TICK (60) game-mins per tick at 1000ms.
+    // Net game-time rate is identical; the clock just reads smoothly.
+    const slowTick = _isLunch() || (_otActive && _isOTWindow());
+    const mins     = slowTick ? 1 : C.MINS_PER_TICK;
+
+    _runAccrual(mins);
+
+    // OT accrual scaled to real-time rate so earnings are consistent
+    // Work hour accrual (base currency, earned during working shifts only)
+    // Auto-activate OT at window open if flag is set
+    if (State.flags.autoOT && _isOTWindow() && !_otActive && !_otCompletedToday && !_otSkippedToday) {
+      _otActive    = true;
+      _otStartHour = C.WORK_END;
     }
 
     // Advance game time
@@ -282,8 +286,11 @@ const Time = (() => {
     shiftProgress() {
       const h = State.hour + State.minute / 60;
       if (h < C.WORK_START) return 0;
-      if (h >= C.WORK_END)  return 1;
-      return (h - C.WORK_START) / (C.WORK_END - C.WORK_START);
+      const end = _isWeekend()
+        ? (State.dayIndex === 5 ? State.weekendWork.satUntil : State.weekendWork.sunUntil)
+        : C.WORK_END;
+      if (h >= end) return 1;
+      return (h - C.WORK_START) / (end - C.WORK_START);
     },
 
     lunchProgress() {
@@ -297,7 +304,7 @@ const Time = (() => {
     workedPastMidnight() { return _workedPastMidnight; },
 
     clickTick() {
-      _lastAccrual = { wh: 0, ot: 0};
+      _runAccrual(State.clickMinutes); 
       const prevDay = State.dayIndex;
 
       State.minute += State.clickMinutes ?? 1;

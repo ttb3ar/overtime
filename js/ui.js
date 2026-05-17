@@ -502,10 +502,21 @@ const UI = (() => {
     },
 
     showCursorFloat() {
-      const mins = State.clickMinutes ?? 1;
+      const { wh, ot } = Time.lastAccrual();
       const float = document.createElement('div');
       float.className = 'click-float';
-      float.textContent = `+${mins}m`;
+
+      if (ot > 0) {
+        float.textContent = `+${ot.toFixed(2)}✦`;
+        float.style.color = 'var(--accent)';
+      } else if (wh > 0) {
+        float.textContent = `+${wh.toFixed(2)}⧗`;
+        float.style.color = 'var(--accent2)';
+      } else {
+        float.textContent = `+${State.clickMinutes ?? 1}m`;
+        float.style.color = '';
+      }
+
       float.style.left = _lastClick.x + 'px';
       float.style.top  = _lastClick.y + 'px';
       document.body.appendChild(float);
