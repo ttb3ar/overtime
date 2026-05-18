@@ -364,8 +364,6 @@ const UI = (() => {
   // ── Upgrade shelf ─────────────────────────────────────────
 
   function _updateUpgradeShelf() {
-
-
     const shelfUnlocked = State.week > 1 || State.dayIndex >= 1;
     if (!shelfUnlocked) {
       _hide(el.upgradeShelf);
@@ -386,66 +384,66 @@ const UI = (() => {
     const allUpgrades = Upgrades.all();
     if (!allUpgrades.length) return;
 
-  const tiersKey = JSON.stringify(State.tiers);
-  if (tiersKey !== _lastTiersKey) {
+    const tiersKey = JSON.stringify(State.tiers) + (State.otLifetime > 0);
+    if (tiersKey === _lastTiersKey) {
+      el.upgradeGrid.querySelectorAll('.upgrade-card').forEach(card => {
+        const cur = card.dataset.currency;
+        const cost = parseFloat(card.dataset.cost);
+        const balance = cur === 'wh' ? State.workHours : State.ot;
+        card.classList.toggle('affordable', balance >= cost);
+      });
+      return;
+    }
     _lastTiersKey = tiersKey;
     el.upgradeGrid.innerHTML = '';
-  } else {
-    el.upgradeGrid.querySelectorAll('.upgrade-card').forEach(card => {
-      const cur = card.dataset.currency;
-      const cost = parseFloat(card.dataset.cost);
-      const balance = cur === 'wh' ? State.workHours : State.ot;
-      card.classList.toggle('affordable', balance >= cost);
-    });
-    return;
-  }
-  let anyVisible = false;
+    let anyVisible = false;
 
-    const groups = Upgrades.all();
-    groups.forEach(g => {
-      if (!Upgrades.isUnlocked(g.id)) return;
-      if (Upgrades.isComplete(g.id)) return;
+      const groups = Upgrades.all();
+      groups.forEach(g => {
+        if (!Upgrades.isUnlocked(g.id)) return;
+        if (Upgrades.isComplete(g.id)) return;
 
-      const tier = Upgrades.nextTier(g.id);
-      if (!tier) return;
-      anyVisible = true;
+        const tier = Upgrades.nextTier(g.id);
+        if (!tier) return;
+        anyVisible = true;
 
-      const cur       = tier.currency;
-      const balance   = cur === 'wh' ? State.workHours : State.ot;
-      const affordable = balance >= tier.cost;
-      const symbol    = cur === 'wh' ? '⧗' : '✦';
+        const cur       = tier.currency;
+        const balance   = cur === 'wh' ? State.workHours : State.ot;
+        const affordable = balance >= tier.cost;
+        const symbol    = cur === 'wh' ? '⧗' : '✦';
 
-      const card = document.createElement('div');
-      card.className = 'upgrade-card' + (affordable ? ' affordable' : '');
-      card.dataset.currency = cur;
-      card.dataset.cost = tier.cost;
+        const card = document.createElement('div');
+        card.className = 'upgrade-card' + (affordable ? ' affordable' : '');
+        card.dataset.currency = cur;
+        card.dataset.cost = tier.cost;
 
-      card.innerHTML = `
-        <div class="u-name">${tier.name}</div>
-        <div class="u-cost ${cur === 'wh' ? 'wh' : ''}">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
-        <div class="u-desc">${tier.desc}</div>
-      `;
+        card.innerHTML = `
+          <div class="u-name">${tier.name}</div>
+          <div class="u-cost ${cur === 'wh' ? 'wh' : ''}">${symbol} ${tier.cost.toFixed(1)}${cur === 'wh' ? 'h wh' : 'h ot'}</div>
+          <div class="u-desc">${tier.desc}</div>
+        `;
 
-      card.addEventListener('click', () => {
-        if (Upgrades.buy(g.id)) {
-          UI.showToast(`${tier.name} unlocked.`, 'good');
-          _renderUpgradeGrid();
-        } else {
-          UI.showToast('not enough hours.', 'warn');
-        }
+        card.addEventListener('click', () => {
+          if (Upgrades.buy(g.id)) {
+            UI.showToast(`${tier.name} unlocked.`, 'good');
+            _renderUpgradeGrid();
+          } else {
+            UI.showToast('not enough hours.', 'warn');
+          }
+        });
+
+        el.upgradeGrid.appendChild(card);
       });
 
-      el.upgradeGrid.appendChild(card);
-    });
+      el.shelfToggle.textContent = anyVisible
+        ? `upgrades  ${_shelfOpen ? '↑' : '↓'}`
+        : 'upgrades  —';
 
-    el.shelfToggle.textContent = anyVisible
-      ? `upgrades  ${_shelfOpen ? '↑' : '↓'}`
-      : 'upgrades  —';
-
-    el.upgradeGrid.className = _shelfOpen ? 'open' : '';
-  }
+      el.upgradeGrid.className = _shelfOpen ? 'open' : '';
+    }
 
   function _renderUpgradeGrid() {
+    _lastTiersKey = '';
     _updateUpgradeShelf();
   }
 
