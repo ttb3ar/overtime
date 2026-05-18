@@ -31,11 +31,11 @@ const Upgrades = (() => {
           cardName: 'intern → employee',
         },
         {
-          name:     'recognition',
+          name:     'recognized employee',
           rank:     'recognized employee',
           desc:     'employee of the month. still no raise. at least your time is worth more?',
-          cost:     70,
-          currency: 'wh',
+          cost:     18,
+          currency: 'ot',
           apply() {
             State.clickMinutes = 2;
           },
@@ -45,8 +45,8 @@ const Upgrades = (() => {
           name:     'team leader',
           rank:     'team leader',
           desc:     'manager-level responsibility. no additional perks. overtime is now "encouraged".',
-          cost:     180,
-          currency: 'wh',
+          cost:     72,
+          currency: 'ot',
           apply() {
             State.flags.autoOT = true;
           },
@@ -80,39 +80,39 @@ const Upgrades = (() => {
           apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 12); },
         },
         {
-          name:     'sunday morning',
+          name:     'saturday afternoon',
           desc:     '"happy to help out."',
           cost:     89,
+          currency: 'wh',
+          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.satUntil, 15.5); },
+        },
+        {
+          name:     'saturday evening',
+          desc:     '"at my own discretion."',
+          cost:     137,
+          currency: 'wh',
+          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 18.5); },
+        },
+        {
+          name:     'sunday morning',
+          desc:     '"as requested."',
+          cost:     192,
           currency: 'wh',
           apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 12); },
         },
         {
-          name:     'saturday afternoon',
-          desc:     '"at my own discretion."',
-          cost:     137,
-          currency: 'wh',
-          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 15.5); },
-        },
-        {
           name:     'sunday afternoon',
-          desc:     '"as requested."',
-          cost:     192,
-          currency: 'wh',
-          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 15.5); },
-        },
-        {
-          name:     'saturday evening',
           desc:     '"per leadership\'s guidance."',
           cost:     222,
           currency: 'wh',
-          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.satUntil, 17); },
+          apply()   { State.weekendWork.satUntil = Math.max(State.weekendWork.sunUntil, 15.5); },
         },
         {
           name:     'sunday evening',
           desc:     '"as discussed."',
           cost:     280,
           currency: 'wh',
-          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 17); },
+          apply()   { State.weekendWork.sunUntil = Math.max(State.weekendWork.sunUntil, 18.5); },
         },
         {
           name:     'saturday night',
@@ -250,7 +250,7 @@ const Upgrades = (() => {
         {
           name:     'coffee machine',
           desc:     'the machine appears overnight. +1h overtime.',
-          cost:     61,
+          cost:     42,
           currency: 'wh',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
           cardName: 'coffee machine',
@@ -258,7 +258,7 @@ const Upgrades = (() => {
         {
           name:     'cappuccino',
           desc:     'no more instant coffee. +1h overtime.',
-          cost:     163,
+          cost:     100,
           currency: 'wh',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
           cardName: 'cappuccino',
@@ -332,7 +332,7 @@ const Upgrades = (() => {
           name:     'performative working',
           desc:     'you look busy. that\'s basically the same thing.',
           cost:     169,
-          currency: 'wh',
+          currency: 'ot',
           apply() { State.clickMinutes += 0.5; },
         },
         {

@@ -43,6 +43,7 @@ const Save = (() => {
       State.deserialize({});   // restores all defaults
       Upgrades.reapply();
       Time.stop();
+      Time.reset();
       Time.start(() => {
         UI.update();
         Save.maybeAutosave();

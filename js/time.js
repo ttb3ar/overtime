@@ -48,7 +48,10 @@ const Time = (() => {
     if (State.flags.outsourceSleep) return false;
     if (_isWeekend() && !State.flags.sacrificeWeekend) return false;
     const h = State.hour;
-    const effectiveEnd = C.LUNCH_START + (60 - (State.lunchReduction ?? 0)) / 60;
+    const lunchEndMinute = 60 - (State.lunchReduction ?? 0); // total minutes into lunch hour
+    const effectiveEnd = C.LUNCH_START + lunchEndMinute / 60;
+    const hDecimal = State.hour + State.minute / 60;
+    return hDecimal >= C.LUNCH_START && hDecimal < effectiveEnd;
     return h >= C.LUNCH_START && h < effectiveEnd;
   }
 
@@ -77,6 +80,7 @@ const Time = (() => {
     _otSkippedToday   = false;
     _otEndHour        = null;
     _workedPastMidnight = false;
+    if (State.dayIndex === 6) _workedWeekend = false;
   }
 
   function _deriveMood() {
@@ -249,6 +253,19 @@ const Time = (() => {
       _currentDelay = null;
     },
 
+    reset() {
+      _otActive           = false;
+      _otStartHour        = null;
+      _otCompletedToday   = false;
+      _otSkippedToday     = false;
+      _otEndHour          = null;
+      _workedPastMidnight = false;
+      _workedWeekend      = false;
+      _lastAccrual        = { wh: 0, ot: 0 };
+      _mood               = 'normal';
+      _otMaxHours         = 1;
+    },
+
     activateOT() {
       if (!State.trainingComplete)  return false;
       if (_otActive)                return false;
@@ -318,8 +335,10 @@ const Time = (() => {
     lunchProgress() {
       const h = State.hour + State.minute / 60;
       if (h < C.LUNCH_START) return 0;
-      if (h >= C.LUNCH_END)  return 1;
-      return (h - C.LUNCH_START) / (C.LUNCH_END - C.LUNCH_START);
+      const lunchEndMinute = 60 - (State.lunchReduction ?? 0);
+      const effectiveEnd = C.LUNCH_START + lunchEndMinute / 60;
+      if (h >= effectiveEnd) return 1;
+      return (h - C.LUNCH_START) / (effectiveEnd - C.LUNCH_START);
     },
 
     otMaxHours() { return _otMaxHours; },

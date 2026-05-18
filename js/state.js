@@ -5,7 +5,7 @@
 const State = {
 
   // ── Time ──────────────────────────────────────────────────
-  week:       2,      // current week number (1-indexed)
+  week:       1,      // current week number (1-indexed)
   dayIndex:   0,      // 0=monday … 6=sunday
   hour:       9,      // 0–23
   minute:     0,      // 0–59
@@ -165,7 +165,7 @@ const State = {
   deserialize(data) {
     this.week             = data.week             ?? 1;
     this.dayIndex         = data.dayIndex         ?? 0;
-    this.hour             = data.hour             ?? 9;
+    this.hour             = data.hour             ?? 7;
     this.minute           = data.minute           ?? 0;
     this.trainingComplete = data.trainingComplete ?? false;
     this.ot               = data.ot               ?? 0;
