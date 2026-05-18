@@ -18,6 +18,10 @@ const Time = (() => {
   let _workedWeekend = false;
   let _otEndHour = null;
 
+  // ── Lunch stuff ──────────────────────────────────────────
+  let _lunchStarted    = false;
+  let _lunchStartTime  = null;  // decimal hour when lunch began
+
   // ── Character mood ────────────────────────────────────────
   let _mood = 'normal';
 
@@ -46,13 +50,21 @@ const Time = (() => {
   function _isLunch() {
     if (State.flags.skipLunch) return false;
     if (State.flags.outsourceSleep) return false;
-    if (_isWeekend() && !State.flags.sacrificeWeekend) return false;
-    const h = State.hour;
-    const lunchEndMinute = 60 - (State.lunchReduction ?? 0); // total minutes into lunch hour
-    const effectiveEnd = C.LUNCH_START + lunchEndMinute / 60;
-    const hDecimal = State.hour + State.minute / 60;
-    return hDecimal >= C.LUNCH_START && hDecimal < effectiveEnd;
-    return h >= C.LUNCH_START && h < effectiveEnd;
+    if (_isWeekend()) return false;
+
+    const h = State.hour + State.minute / 60;
+    const lunchDuration = (60 - (State.lunchReduction ?? 0)) / 60;
+
+    // enter lunch window
+    if (!_lunchStarted && h >= C.LUNCH_START && h < C.LUNCH_END) {
+      _lunchStarted   = true;
+      _lunchStartTime = h;
+    }
+
+    if (!_lunchStarted) return false;
+
+    // run for full duration from when lunch started
+    return h < _lunchStartTime + lunchDuration;
   }
 
   function _isOTWindow() {
@@ -81,6 +93,10 @@ const Time = (() => {
     _otEndHour        = null;
     _workedPastMidnight = false;
     if (State.dayIndex === 6) _workedWeekend = false;
+
+    //lunch
+    _lunchStarted   = false;
+    _lunchStartTime = null;
   }
 
   function _deriveMood() {
@@ -334,11 +350,11 @@ const Time = (() => {
 
     lunchProgress() {
       const h = State.hour + State.minute / 60;
-      if (h < C.LUNCH_START) return 0;
-      const lunchEndMinute = 60 - (State.lunchReduction ?? 0);
-      const effectiveEnd = C.LUNCH_START + lunchEndMinute / 60;
-      if (h >= effectiveEnd) return 1;
-      return (h - C.LUNCH_START) / (effectiveEnd - C.LUNCH_START);
+      if (!_lunchStarted || _lunchStartTime === null) return 0;
+      const lunchDuration = (60 - (State.lunchReduction ?? 0)) / 60;
+      const end = _lunchStartTime + lunchDuration;
+      if (h >= end) return 1;
+      return Math.min((h - _lunchStartTime) / lunchDuration, 1);
     },
 
     otMaxHours() { return _otMaxHours; },
