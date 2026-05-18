@@ -56,7 +56,7 @@ const Upgrades = (() => {
           name:     'manager',
           rank:     'manager',
           desc:     'you thought this would make you happy',
-          cost:     180,
+          cost:     1000,
           currency: 'wh',
           apply() {
             State.flags.autoOT = true;
@@ -258,7 +258,7 @@ const Upgrades = (() => {
         {
           name:     'cappuccino',
           desc:     'no more instant coffee. +1h overtime.',
-          cost:     100,
+          cost:     137,
           currency: 'wh',
           apply() { Time.setOTCap(Time.otMaxHours() + 1); },
           cardName: 'cappuccino',
@@ -266,7 +266,7 @@ const Upgrades = (() => {
         {
           name:     'latte',
           desc:     'you\'re getting serious. +1h overtime.',
-          cost:     215,
+          cost:     184,
           currency: 'wh',
           apply() { Time.setOTCap(Time.otMaxHours() + 2); },
           cardName: 'latte',
@@ -274,7 +274,7 @@ const Upgrades = (() => {
         {
           name:     'americano',
           desc:     'no milk. no mercy. +1h overtime.',
-          cost:     245,
+          cost:     215,
           currency: 'wh',
           apply() { Time.setOTCap(Time.otMaxHours() + 2); },
           cardName: 'americano',
@@ -283,7 +283,7 @@ const Upgrades = (() => {
           name:     'drip',
           desc:     'you\'ve stopped tasting it. +1h overtime.',
           cost:     270,
-          currency: 'wh',
+          currency: 'ot',
           apply() { Time.setOTCap(Time.otMaxHours() + 2); },
           cardName: 'drip',
         },
@@ -291,7 +291,7 @@ const Upgrades = (() => {
           name:     'espresso shots',
           desc:     'plural. +1h overtime.',
           cost:     321,
-          currency: 'wh',
+          currency: 'ot',
           apply() { Time.setOTCap(Time.otMaxHours() + 3); },
           cardName: 'espresso shots',
         },
@@ -299,7 +299,7 @@ const Upgrades = (() => {
           name:     '???',
           desc:     '+1h overtime.',
           cost:     372,
-          currency: 'wh',
+          currency: 'ot',
           apply() { Time.setOTCap(Time.otMaxHours() + 3); },
           cardName: '???',
         },
@@ -307,7 +307,7 @@ const Upgrades = (() => {
           name:     'outsource sleep',
           desc:     'you\'re happier this way. for the company.',
           cost:     424,
-          currency: 'wh',
+          currency: 'ot',
           apply() {
             State.flags.outsourceSleep = true;
             Time.setOTCap(24);
