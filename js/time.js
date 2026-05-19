@@ -209,7 +209,7 @@ const Time = (() => {
       State.hour++;
     }
     if (State.hour >= 24) {
-      State.hour -= 24;
+      State.hour = State.hour % 24;
       State.dayIndex++;
     }
     if (State.dayIndex >= 7) {
@@ -366,16 +366,16 @@ const Time = (() => {
 
       State.minute += State.clickMinutes ?? 1;
       while (State.minute >= 60) {
-      State.minute -= 60;
-      State.hour++;
+        State.minute -= 60;
+        State.hour++;
       }
       if (State.hour >= 24) {
-      State.hour -= 24;
-      State.dayIndex++;
+        State.hour = State.hour % 24;
+        State.dayIndex++;
       }
       if (State.dayIndex >= 7) {
-      State.dayIndex = 0;
-      State.week++;
+        State.dayIndex = 0;
+        State.week++;
       }
       if (State.eventCooldown > 0) State.eventCooldown--;
       if (State.dayIndex !== prevDay) _resetDailyOT();

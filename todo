@@ -13,6 +13,7 @@ syncing player clicks with currency gain instead of just progressing time forwar
 
 upgrades:
 better tuning on upgrade pricing (more things purchasable with ot)
+ -(touched up but needs testing)
 
 eventually there'll be a manager tier upgrade that allows hiring interns (who can be individually upgraded?)
 -each intern will bring in their own wh and ot that count towards your total
