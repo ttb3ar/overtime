@@ -1,18 +1,21 @@
+!: in progress 
+?: needs verification/testing
+
 general:
-mood system: polish on moods during certain conditions
+!mood system: polish on moods during certain conditions
 character just gets more and more tired/tourtured as the game progresses but the player gets more dopamine via resources going up
-character is tired for rest of weekend if worked on weekendi
+!?character is tired for rest of weekend if worked on weekend
  -currently character is tired if anyday of the weekend is worked even if one should be open
 
-different quips depending on the context (currently they are universal)
+!different quips depending on the context (currently they are universal)
+ -added, needs weekend quips (two sets of tired weekend and regular)
+ --also contextual click quips
 
-fix day rollover during ot logic (needs testing but possibly done)
+?fix day rollover during ot logic (needs testing but possibly done)
 
-syncing player clicks with currency gain instead of just progressing time forward
- -chracter indicator too (needs testing, potentially done)
 
 upgrades:
-better tuning on upgrade pricing (more things purchasable with ot)
+!?better tuning on upgrade pricing (more things purchasable with ot)
  -(touched up but needs testing)
 
 eventually there'll be a manager tier upgrade that allows hiring interns (who can be individually upgraded?)

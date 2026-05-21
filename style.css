@@ -88,7 +88,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: 8px;
   padding: 16px 24px 220px;  /* bottom clears shelf + log bar */
   text-align: center;
   min-height: 0;
@@ -109,7 +109,6 @@ html, body {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
   user-select: none;
 }
 
@@ -141,8 +140,19 @@ html, body {
   font-weight: 300;
   max-width: 220px;
   line-height: 1.5;
-  animation: fade-in 0.3s ease;
+  text-align: center;
+  pointer-events: none;
+  min-height: 1.5em;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  margin-top: 8px;
 }
+
+#speech-bubble.hidden {
+  display: block !important;  /* override global .hidden */
+  opacity: 0;
+}
+
 
 /* ── Status line ────────────────────────────────────────────── */
 #status-line {

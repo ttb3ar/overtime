@@ -50,16 +50,9 @@ const UI = (() => {
 
   function _getSpeech(mood) {
     const map = {
-      normal:       null,
-      working:      null,
-      lunch:        'i could be working right now...',
       waiting:      State.flags.autoOT ? 'sigh...' : null,
-      ot_auto:      'billing extra hours... again.',
-      ot:           'billing extra hours...',
       done:         null,
       unproductive: '...i could have stayed.',
-      weekend:      null,
-      asleep:       null,
       groggy:       'so tired...',
     };
     return map[mood] ?? null;
@@ -71,6 +64,8 @@ const UI = (() => {
     'in a meeting about meetings.',
     'cc\'d on something ominous.',
     'spreadsheet open. eyes closed.',
+    'moved a task to "in progress".',
+    'wrote a long email. deleted it. sent nothing.',
   ];
 
   const LUNCH_QUIPS = [
@@ -79,6 +74,29 @@ const UI = (() => {
     'checking plack between bites.',
     'this sandwich cost $18.',
     'technically this is networking.',
+    'the microwave smells like someone else\'s regret.',
+    'eating alone by choice. obviously.',
+    'checked work email twice during lunch.',
+  ];
+
+  const OT_QUIPS = [
+    'the cleaning crew just arrived.',
+    'sent an email at 9pm. no regrets.',
+    'the office is quieter now. better.',
+    'billing this hour. and this one.',
+    'the vending machine is fully stocked.',
+    'security just waved. we have an understanding.',
+    'ordered dinner. expensed it.',
+    'the silence is productive.',
+  ];
+
+  const WEEKEND_QUIPS = [
+    'don\'t think about work.',
+    'it\'s fine. everything is fine.',
+    'technically unreachable right now.',
+    'the laptop is right there though.',
+    'enjoying the weekend. probably.',
+    'not checking email. not checking email.',
   ];
 
   const CLICK_QUIPS = [
@@ -98,7 +116,7 @@ const UI = (() => {
 
   // ── Internal state ────────────────────────────────────────
   let _lastMood   = null;
-  let _quipTimer  = 0;
+  let _quipTimer  = null;
   let _shelfOpen  = false;
   let _lastRank   = null;
   let _lastClick = { x: 0, y: 0 };
@@ -154,6 +172,90 @@ const UI = (() => {
     document.head.appendChild(link);
   }
 
+  // ── Quip ─────────────────────────────────────────────────────
+
+  const QUIP_DISPLAY_MS = 3500;
+  const CYCLING_MOODS   = ['working', 'lunch', 'ot', 'ot_auto'];
+
+  const QUIP_LISTS = {
+    working: WORK_QUIPS,
+    lunch:   LUNCH_QUIPS,
+    ot:      OT_QUIPS,
+    ot_auto: OT_QUIPS,
+  };
+
+  function _randomInterval() {
+    return 1000 + Math.random() * 2000;
+  }
+
+  function _showQuip(q) {
+    clearTimeout(el.speechBubble._quipTimeout);
+    clearInterval(el.speechBubble._moodWatch);
+    el.speechBubble.textContent = q;
+    _show(el.speechBubble);
+    el.speechBubble.classList.remove('fading');
+
+    const shownMood = Time.mood();
+
+    // watch for mood change and fade immediately if it happens
+    el.speechBubble._moodWatch = setInterval(() => {
+      if (Time.mood() !== shownMood) {
+        clearInterval(el.speechBubble._moodWatch);
+        clearTimeout(el.speechBubble._quipTimeout);
+        _fadeQuip();
+        if (CYCLING_MOODS.includes(Time.mood())) _scheduleCyclingQuip(Time.mood());
+      }
+    }, 200);
+
+    el.speechBubble._quipTimeout = setTimeout(() => {
+      clearInterval(el.speechBubble._moodWatch);
+      _fadeQuip();
+      if (CYCLING_MOODS.includes(Time.mood())) _scheduleCyclingQuip(Time.mood());
+    }, QUIP_DISPLAY_MS);
+  }
+
+  function _fadeQuip() {
+    _hide(el.speechBubble);  // adds .hidden → triggers opacity:0 transition
+    setTimeout(() => {
+      el.speechBubble.textContent = '';
+    }, 300);  // clear text after transition completes
+  }
+
+  function _msUntilMoodChange() {
+    const h     = State.hour + State.minute / 60;
+    const mood  = Time.mood();
+
+    // 1 game-hour = 1 real-second = 1000ms (during normal ticks)
+    if (mood === 'working') {
+      const nextBoundary = (h < C.LUNCH_START) ? C.LUNCH_START : C.WORK_END;
+      return (nextBoundary - h) * 1000;
+    }
+    if (mood === 'lunch') {
+      const lunchDuration = (60 - (State.lunchReduction ?? 0)) / 60;
+      const lunchEnd = (Time.lunchStartTime() ?? C.LUNCH_START) + lunchDuration;
+      return (lunchEnd - h) * 1000;
+    }
+    if (mood === 'ot' || mood === 'ot_auto') {
+      return (1 - Time.otProgress()) * Time.otMaxHours() * 1000;
+    }
+    return Infinity;
+  }
+
+  function _scheduleCyclingQuip(mood) {
+    clearTimeout(_quipTimer);
+    _quipTimer = setTimeout(() => {
+      const currentMood = Time.mood();
+      if (!CYCLING_MOODS.includes(currentMood)) return;
+      // don't fire if mood change is less than 1 real second away
+      if (_msUntilMoodChange() < 1000) {
+        _scheduleCyclingQuip(currentMood);
+        return;
+      }
+      const list = QUIP_LISTS[currentMood];
+      _showQuip(list[Math.floor(Math.random() * list.length)]);
+    }, _randomInterval());
+  }
+
   // ── Character ─────────────────────────────────────────────
 
   function _updateCharacter() {
@@ -162,6 +264,10 @@ const UI = (() => {
     el.character.textContent = _getFace(mood);
 
     if (mood !== _lastMood) {
+      const prev = _lastMood;
+      _lastMood = mood;
+
+      // character class
       el.character.className = '';
       if (mood === 'ot')           el.character.classList.add('happy');
       if (mood === 'ot_auto')      el.character.classList.add('tired');
@@ -170,39 +276,28 @@ const UI = (() => {
       if (mood === 'lunch')        el.character.classList.add('guilty');
       if (mood === 'done_late')    el.character.classList.add('tired');
       if (mood === 'waiting' && State.flags.autoOT) el.character.classList.add('tired');
-      _lastMood = mood;
 
+      // stop cycling if leaving a cycling mood
+      if (CYCLING_MOODS.includes(prev) && !CYCLING_MOODS.includes(mood)) {
+        clearTimeout(_quipTimer);
+        _quipTimer = null;
+      }
+
+      // start cycling if entering a cycling mood
+      if (CYCLING_MOODS.includes(mood) && !CYCLING_MOODS.includes(prev)) {
+        _scheduleCyclingQuip(mood);
+      }
+
+      // conditional one-shot quips on mood entry
       const speech = _getSpeech(mood);
       if (speech) {
-        el.speechBubble.textContent = speech;
-        _show(el.speechBubble);
-        if (mood === 'ot' || mood === 'unproductive') {
-          setTimeout(() => _hide(el.speechBubble), 5000);
-        }
-      } else {
-        _hide(el.speechBubble);
+        _showQuip(speech);
+      } else if (!CYCLING_MOODS.includes(mood)) {
+        // non-cycling, no speech — clear bubble
+        clearTimeout(el.speechBubble._quipTimeout);
+        _fadeQuip();
       }
-    }
-
-    if (mood === 'working') {
-      _quipTimer++;
-      if (_quipTimer >= 45) {
-        _quipTimer = 0;
-        const q = WORK_QUIPS[Math.floor(Math.random() * WORK_QUIPS.length)];
-        el.speechBubble.textContent = q;
-        _show(el.speechBubble);
-        setTimeout(() => _hide(el.speechBubble), 6000);
-      }
-    } else if (mood === 'lunch') {
-      _quipTimer++;
-      if (_quipTimer >= 60) {
-        _quipTimer = 0;
-        const q = LUNCH_QUIPS[Math.floor(Math.random() * LUNCH_QUIPS.length)];
-        el.speechBubble.textContent = q;
-        _show(el.speechBubble);
-      }
-    } else {
-      _quipTimer = 0;
+      // if entering a cycling mood, let the existing bubble finish naturally
     }
   }
 
@@ -524,15 +619,21 @@ const UI = (() => {
     },
 
     showClickQuip() {
-        const q = CLICK_QUIPS[Math.floor(Math.random() * CLICK_QUIPS.length)];
-        el.speechBubble.textContent = q;
-        _show(el.speechBubble);
-        clearTimeout(el.speechBubble._quipTimeout);
-        el.speechBubble._quipTimeout = setTimeout(() => _hide(el.speechBubble), 3000);
-        // bounce
-        el.character.classList.remove('happy');
-        void el.character.offsetWidth; // force reflow
-        el.character.classList.add('happy');
+      clearTimeout(_quipTimer);
+      const q = CLICK_QUIPS[Math.floor(Math.random() * CLICK_QUIPS.length)];
+      el.speechBubble.textContent = q;
+      _show(el.speechBubble);
+      clearTimeout(el.speechBubble._quipTimeout);
+      el.speechBubble._quipTimeout = setTimeout(() => {
+        _hide(el.speechBubble);
+        // resume cycling if still in a cycling mood
+        if (CYCLING_MOODS.includes(Time.mood())) {
+          _scheduleCyclingQuip(Time.mood());
+        }
+      }, 3000);
+      el.character.classList.remove('happy');
+      void el.character.offsetWidth;
+      el.character.classList.add('happy');
     },
   };
 
