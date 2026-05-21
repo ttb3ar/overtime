@@ -10,7 +10,7 @@ const Time = (() => {
   // ── OT session state ──────────────────────────────────────
   let _otActive         = false;
   let _otStartHour      = null;
-  let _otMaxHours       = 2;
+  let _otMaxHours       = 1;
   let _otCompletedToday = false;
   let _otSkippedToday   = false;
   let _lastAccrual = { wh: 0, ot: 0 };
@@ -310,6 +310,7 @@ const Time = (() => {
     isWorkHours()      { return _isWorkHours(); },
     isLunch()          { return _isLunch(); },
     lastAccrual()      { return _lastAccrual; },
+    lunchStartTime()   { return _lunchStartTime; },
 
     otProgress() {
       if (!_otActive) return 0;
