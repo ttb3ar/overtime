@@ -311,6 +311,7 @@ const Time = (() => {
     isLunch()          { return _isLunch(); },
     lastAccrual()      { return _lastAccrual; },
     lunchStartTime()   { return _lunchStartTime; },
+    workedWeekend()    { return _workedWeekend; },
 
     otProgress() {
       if (!_otActive) return 0;
