@@ -90,13 +90,30 @@ const UI = (() => {
     'the silence is productive.',
   ];
 
-  const WEEKEND_QUIPS = [
-    'don\'t think about work.',
+  const WEEKEND_QUIPS_FREE = [
+    'not thinking about work',
+    'a well earned break',
+    'recahrging to take on the week',
+    'inner peace',
+    'zen',
+    'two whole days of freedom',
+    'finding fufilment in "hobbies"',
+    'unreachable',
+    'not my problem until monday',
+    'breathing air, touching grass.'
+  ];
+
+  const WEEKEND_QUIPS_GUILT = [
+    'definetley not thinking about work.',
+    'what if they call?...',
+    'i could get a head start on next week...',
     'it\'s fine. everything is fine.',
     'technically unreachable right now.',
     'the laptop is right there though.',
     'enjoying the weekend. probably.',
     'not checking email. not checking email.',
+    'thought about a spreadsheet just now.',
+    'what if i just opened my laptop for a second.',
   ];
 
   const CLICK_QUIPS = [
@@ -175,13 +192,14 @@ const UI = (() => {
   // ── Quip ─────────────────────────────────────────────────────
 
   const QUIP_DISPLAY_MS = 3500;
-  const CYCLING_MOODS   = ['working', 'lunch', 'ot', 'ot_auto'];
+  const CYCLING_MOODS   = ['working', 'lunch', 'ot', 'ot_auto', 'weekend'];
 
   const QUIP_LISTS = {
     working: WORK_QUIPS,
     lunch:   LUNCH_QUIPS,
     ot:      OT_QUIPS,
     ot_auto: OT_QUIPS,
+    get weekend() { return Time.workedWeekend() ? WEEKEND_QUIPS_GUILT : WEEKEND_QUIPS_FREE; },
   };
 
   function _randomInterval() {
@@ -238,22 +256,29 @@ const UI = (() => {
     if (mood === 'ot' || mood === 'ot_auto') {
       return (1 - Time.otProgress()) * Time.otMaxHours() * 1000;
     }
+    if (mood === 'weekend') {
+      // don't fire a quip in the last second before midnight
+      const h = State.hour + State.minute / 60;
+      return (24 - h) * 1000;
+    }
     return Infinity;
   }
 
   function _scheduleCyclingQuip(mood) {
     clearTimeout(_quipTimer);
+    const rate = mood === 'weekend'
+      ? (Time.workedWeekend() ? 0.6 : 1.6)
+      : 1;
     _quipTimer = setTimeout(() => {
       const currentMood = Time.mood();
       if (!CYCLING_MOODS.includes(currentMood)) return;
-      // don't fire if mood change is less than 1 real second away
       if (_msUntilMoodChange() < 1000) {
         _scheduleCyclingQuip(currentMood);
         return;
       }
       const list = QUIP_LISTS[currentMood];
       _showQuip(list[Math.floor(Math.random() * list.length)]);
-    }, _randomInterval());
+    }, _randomInterval() * rate);
   }
 
   // ── Character ─────────────────────────────────────────────
