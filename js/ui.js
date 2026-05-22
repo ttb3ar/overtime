@@ -51,9 +51,10 @@ const UI = (() => {
   function _getSpeech(mood) {
     const map = {
       waiting:      State.flags.autoOT ? 'sigh...' : null,
-      done:         null,
+      done:         'all in a day\'s work.',
       unproductive: '...i could have stayed.',
       groggy:       'so tired...',
+      lunch:        'i could be working right now...',
     };
     return map[mood] ?? null;
   }
@@ -116,7 +117,7 @@ const UI = (() => {
     'what if i just opened my laptop for a second.',
   ];
 
-  const CLICK_QUIPS = [
+  const CLICK_QUIPS_WORKING = [
     'please. i\'m busy.',
     'do you mind?',
     'that doesn\'t help.',
@@ -126,9 +127,56 @@ const UI = (() => {
     'yes. still here.',
     'noted.',
     '...',
-    'you again.',
-    'stop. i\'m concentrating.',
     'i see you.',
+    'not now.',
+    'i\'m in the zone.',
+    'stop. i\'m concentrating.',
+  ];
+
+  const CLICK_QUIPS_LUNCH = [
+    'i\'m on lunch.',
+    'this is my time.',
+    'can it wait until 13:00?',
+    'i\'m eating.',
+    'please. just let me have this.',
+    'even machines get a break.',
+  ];
+
+  const CLICK_QUIPS_OT = [
+    'still here...',
+    'Sisyphys is happy.',
+    'you again.',
+    'anything for the company.',
+    'this fufils me.',
+    'i\'m billing this.',
+    'noted.',
+    'it\'s the name of the game.',
+    'hating both the player and the game.',
+    'the meter is running.',
+    'every. single. hour.',
+    'yes. still here.',
+    'only sleep waits at home anyways.',
+    'the meaning of life.'
+  ];
+
+  const CLICK_QUIPS_WEEKEND = [
+    'it\'s the weekend.',
+    'i\'m not here right now.',
+    'this is my time.',
+    'officially unreachable.',
+    'leave me alone.',
+    'do not disturb.',
+    'please, just let me have this.',
+    'even machines get a break.',
+  ];
+
+  const CLICK_QUIPS_ASLEEP = [
+    'zzz...',
+    '...mm.',
+    'not now.',
+    '...five more minutes.',
+    'zz...',
+    '...hm?',
   ];
 
   // ── Internal state ────────────────────────────────────────
@@ -214,8 +262,8 @@ const UI = (() => {
     el.speechBubble.classList.remove('fading');
 
     const shownMood = Time.mood();
+    const duration = q === 'i could be working right now...' ? 1750 : QUIP_DISPLAY_MS;
 
-    // watch for mood change and fade immediately if it happens
     el.speechBubble._moodWatch = setInterval(() => {
       if (Time.mood() !== shownMood) {
         clearInterval(el.speechBubble._moodWatch);
@@ -229,7 +277,7 @@ const UI = (() => {
       clearInterval(el.speechBubble._moodWatch);
       _fadeQuip();
       if (CYCLING_MOODS.includes(Time.mood())) _scheduleCyclingQuip(Time.mood());
-    }, QUIP_DISPLAY_MS);
+    }, duration);
   }
 
   function _fadeQuip() {
@@ -272,7 +320,7 @@ const UI = (() => {
     _quipTimer = setTimeout(() => {
       const currentMood = Time.mood();
       if (!CYCLING_MOODS.includes(currentMood)) return;
-      if (_msUntilMoodChange() < 1000) {
+      if (mood !== 'lunch' && _msUntilMoodChange() < 1000) {
         _scheduleCyclingQuip(currentMood);
         return;
       }
@@ -645,20 +693,38 @@ const UI = (() => {
 
     showClickQuip() {
       clearTimeout(_quipTimer);
-      const q = CLICK_QUIPS[Math.floor(Math.random() * CLICK_QUIPS.length)];
+      const mood = Time.mood();
+      const map = {
+        working:  CLICK_QUIPS_WORKING,
+        lunch:    CLICK_QUIPS_LUNCH,
+        ot:       CLICK_QUIPS_OT,
+        ot_auto:  CLICK_QUIPS_OT,
+        weekend:  CLICK_QUIPS_WEEKEND,
+        asleep:   CLICK_QUIPS_ASLEEP,
+      };
+      const list = map[mood] ?? CLICK_QUIPS;
+      const q = list[Math.floor(Math.random() * list.length)];
       el.speechBubble.textContent = q;
       _show(el.speechBubble);
       clearTimeout(el.speechBubble._quipTimeout);
       el.speechBubble._quipTimeout = setTimeout(() => {
-        _hide(el.speechBubble);
-        // resume cycling if still in a cycling mood
-        if (CYCLING_MOODS.includes(Time.mood())) {
-          _scheduleCyclingQuip(Time.mood());
-        }
+        el.speechBubble.style.opacity = '0';
+        setTimeout(() => {
+          el.speechBubble.style.opacity = '';
+          _hide(el.speechBubble);
+          if (CYCLING_MOODS.includes(Time.mood())) {
+            _scheduleCyclingQuip(Time.mood());
+          }
+        }, 300);
       }, 3000);
-      el.character.classList.remove('happy');
-      void el.character.offsetWidth;
-      el.character.classList.add('happy');
+      if (mood !== 'asleep') {
+        el.character.classList.remove('happy', 'guilty');
+        void el.character.offsetWidth;
+        el.character.classList.add('happy');
+        if (mood === 'lunch') {
+          setTimeout(() => el.character.classList.add('guilty'), 500);
+        }
+      }
     },
   };
 
