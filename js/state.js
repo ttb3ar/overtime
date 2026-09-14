@@ -14,6 +14,7 @@ const State = {
   trainingComplete: false,
   tiers: {},          // groupId → tier index purchased
   lunchReduction: 0,  // minutes removed from lunch window
+  weekendWork: { satUntil: 0, sunUntil: 0, satOT: 0, sunOT: 0 },
   clickMinutes: 1,
 
   // ── Overtime ──────────────────────────────────────────────
@@ -42,7 +43,6 @@ const State = {
     outsourceSleep: false,  // all hours count as work
     autoOT:         false,  // passive OT accrual
     openDoor:       false,  // higher event frequency
-    weekendWork: { satUntil: 0, sunUntil: 0, satOT: 0, sunOT: 0 },
   },
 
   // ── Auto-OT multiplier (stacks from upgrades) ────────────
