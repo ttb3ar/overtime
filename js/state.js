@@ -16,6 +16,7 @@ const State = {
   lunchReduction: 0,  // minutes removed from lunch window
   weekendWork: { satUntil: 0, sunUntil: 0, satOT: 0, sunOT: 0 },
   clickMinutes: 1,
+  gameOver: false,    
 
   // ── Overtime ──────────────────────────────────────────────
   ot:         0,      // spendable overtime hours
@@ -145,6 +146,7 @@ const State = {
       hour:             this.hour,
       minute:           this.minute,
       trainingComplete: this.trainingComplete,
+      gameOver:         this.gameOver,
       ot:               this.ot,
       otLifetime:       this.otLifetime,
       //bought:           [...this.bought],
@@ -168,6 +170,7 @@ const State = {
     this.hour             = data.hour             ?? 7;
     this.minute           = data.minute           ?? 0;
     this.trainingComplete = data.trainingComplete ?? false;
+    this.gameOver         = data.gameOver         ?? false;
     this.ot               = data.ot               ?? 0;
     this.otLifetime       = data.otLifetime       ?? 0;
     //this.bought           = new Set(data.bought   ?? []);

@@ -15,6 +15,23 @@ const Upgrades = (() => {
   const GROUPS = [
 
     {
+      id: 'enjoy_life',
+      unlock: () => true,
+      tiers: [
+        {
+          name:     'live life',
+          desc:     'unless of course, you live for the company',
+          cost:     0,
+          currency: 'wh',
+          apply() {
+            State.gameOver = true;
+          },
+          cardName: 'game over',
+        },
+      ]
+    },
+
+    {
       id: 'promote',
       baseRank: 'intern',
       unlock: () => true,   // always visible from shelf unlock

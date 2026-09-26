@@ -471,6 +471,76 @@ html, body {
 
 .ghost-btn:hover { color: var(--fg); }
 
+/* ── Game over overlay ──────────────────────────────────────── */
+#game-over-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(247, 246, 242, 0.97);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  animation: fade-in 0.6s ease;
+}
+
+#game-over-card {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  padding: 24px;
+  user-select: none;
+}
+
+#game-over-title {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+#game-over-stats {
+  display: flex;
+  gap: 20px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--mid);
+}
+
+#game-over-stats span:first-child { color: var(--accent2); }
+#game-over-stats span:last-child  { color: var(--accent); }
+
+#game-over-message {
+  font-size: 13px;
+  color: var(--mid);
+  line-height: 1.7;
+  font-weight: 300;
+  max-width: 260px;
+}
+
+#game-over-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+#game-over-links a {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--fg);
+  text-decoration: none;
+  border-bottom: 1px solid var(--faint);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+#game-over-links a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* ── Toast ──────────────────────────────────────────────────── */
 #toast-layer {
   position: fixed;

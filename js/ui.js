@@ -27,6 +27,9 @@ const UI = (() => {
     el.toastLayer   = document.getElementById('toast-layer');
     el.whDisplay    = document.getElementById('wh-display');
     el.whCount      = document.getElementById('wh-count');
+    el.gameOverOverlay = document.getElementById('game-over-overlay');
+    el.gameOverWh      = document.getElementById('game-over-wh');
+    el.gameOverOt      = document.getElementById('game-over-ot');
   }
 
   // ── Character faces per mood ──────────────────────────────
@@ -399,6 +402,12 @@ const UI = (() => {
     setTimeout(() => float.remove(), 2000);
   }
 
+  function _showGameOverOverlay() {
+    el.gameOverWh.textContent = State.workHoursLifetime.toFixed(1);
+    el.gameOverOt.textContent = State.otLifetime.toFixed(1);
+    _show(el.gameOverOverlay);
+  }
+
   // ── Status line ───────────────────────────────────────────
 
   function _updateStatus() {
@@ -593,6 +602,10 @@ const UI = (() => {
 
         card.addEventListener('click', () => {
           if (Upgrades.buy(g.id)) {
+            if (g.id === 'enjoy_life') {
+              UI.triggerGameOver();
+              return;
+            }
             UI.showToast(`${tier.name} unlocked.`, 'good');
             _renderUpgradeGrid();
           } else {
@@ -644,6 +657,7 @@ const UI = (() => {
     },
 
     update() {
+      if (State.gameOver) return;   // overlay is up; stop normal refresh
       _updateHeader();
       _updateCharacter();
       _updateStatus();
@@ -659,6 +673,23 @@ const UI = (() => {
       el.character.classList.remove('happy');
       void el.character.offsetWidth;
       el.character.classList.add('happy');
+    },
+
+    triggerGameOver() {
+      Time.stop();
+
+      el.character.classList.remove('happy');
+      void el.character.offsetWidth;
+      el.character.classList.add('happy');
+
+      clearTimeout(_quipTimer);
+      clearTimeout(el.speechBubble._quipTimeout);
+      clearInterval(el.speechBubble._moodWatch);
+      el.speechBubble.textContent = "all in a day's work.";
+      _show(el.speechBubble);
+      el.speechBubble.classList.remove('fading');
+
+      setTimeout(_showGameOverOverlay, 1800);
     },
 
     showToast(text, type = '') {

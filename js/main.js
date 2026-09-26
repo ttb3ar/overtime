@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.addEventListener('click', (e) => {
+    if (State.gameOver) return;   // overlay is up; ignore clicks
     if (e.target.closest('#btn-primary'))   return;
     if (e.target.closest('#event-choices')) return;
     if (e.target.closest('#upgrade-shelf')) return;
