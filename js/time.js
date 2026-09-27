@@ -280,6 +280,8 @@ const Time = (() => {
       _lastAccrual        = { wh: 0, ot: 0 };
       _mood               = 'normal';
       _otMaxHours         = 1;
+      _lunchStarted       = false;
+      _lunchStartTime     = null;
     },
 
     activateOT() {

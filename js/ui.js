@@ -678,18 +678,24 @@ const UI = (() => {
     triggerGameOver() {
       Time.stop();
 
-      el.character.classList.remove('happy');
+      el.character.className = '';
+      el.character.textContent = _getFace('done')
       void el.character.offsetWidth;
-      el.character.classList.add('happy');
+      el.character.classList.add('done');
 
       clearTimeout(_quipTimer);
       clearTimeout(el.speechBubble._quipTimeout);
       clearInterval(el.speechBubble._moodWatch);
-      el.speechBubble.textContent = "all in a day's work.";
+      el.speechBubble.textContent = "it's why we work";
       _show(el.speechBubble);
       el.speechBubble.classList.remove('fading');
 
       setTimeout(_showGameOverOverlay, 1800);
+    },
+
+    resetGameOver() {
+      el.character.classList.remove('happy');
+      _hide(el.gameOverOverlay);
     },
 
     showToast(text, type = '') {

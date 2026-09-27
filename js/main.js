@@ -53,6 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
     UI.update();
   });
 
+  document.getElementById('btn-replay').addEventListener('click', () => {
+    Save.reset();
+    State.gameOver = false;
+    UI.resetGameOver();
+    Time.start(() => {
+      UI.update();
+      Save.maybeAutosave();
+    });
+    UI.update();
+  });
+
   document.addEventListener('click', (e) => {
     if (State.gameOver) return;   // overlay is up; ignore clicks
     if (e.target.closest('#btn-primary'))   return;

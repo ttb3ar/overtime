@@ -132,6 +132,7 @@ html, body {
 #character.happy    { animation: bounce 0.5s ease; }
 #character.stressed { animation: wobble 0.4s ease; }
 #character.guilty   { animation: breathe 7s ease-in-out infinite; opacity: 0.75; }
+#character.done     { animation: settle 1.2s ease; }
 
 #speech-bubble {
   font-size: 12px;
@@ -510,8 +511,8 @@ html, body {
   color: var(--mid);
 }
 
-#game-over-stats span:first-child { color: var(--accent2); }
-#game-over-stats span:last-child  { color: var(--accent); }
+#game-over-wh { color: var(--accent2); }
+#game-over-ot { color: var(--accent); }
 
 #game-over-message {
   font-size: 13px;
@@ -592,6 +593,12 @@ html, body {
   0%,100% { transform: rotate(0deg); }
   25%     { transform: rotate(-4deg); }
   75%     { transform: rotate(4deg); }
+}
+
+@keyframes settle {
+  0%   { transform: translateY(-6px) scale(1.03); opacity: 0.85; }
+  50%  { transform: translateY(2px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .accrual-float {
